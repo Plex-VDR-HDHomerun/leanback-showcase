@@ -1,0 +1,3902 @@
+From fa562bf580d552e321a4218da3004b73a45cff29 Mon Sep 17 00:00:00 2001
+From: lijingjiang <lijingjiangmason@gmail.com>
+Date: Wed, 5 Jul 2017 10:28:56 -0700
+Subject: [PATCH] Create a Demo to show how to build live TV channel apps for
+ Android TV
+
+---
+ .gitignore                                         |   4 +
+ INPUT.md                                           |   0
+ README.md                                          |   4 +-
+ app/build.gradle                                   |  10 +-
+ app/src/main/AndroidManifest.xml                   |  92 +++
+ .../input/player/ExtractorRendererBuilder.java     |  64 ++
+ .../input/player/LeanbackPlayer.java               | 292 +++++++++
+ .../input/player/RendererBuilderFactory.java       |  40 ++
+ .../input/service/LeanbackTvProgramSync.java       |  80 +++
+ .../input/service/SyncJobReceiver.java             |  61 ++
+ .../input/service/TvInputService.java              | 283 +++++++++
+ .../input/widget/ChannelFeedUtil.java              |  89 +++
+ .../input/widget/ChannelLinkDetailsActivity.java   |  30 +
+ .../input/widget/ChannelLinkDetailsFragment.java   | 104 ++++
+ .../input/widget/ChannelLinkSidePanelActivity.java | 125 ++++
+ .../input/widget/InputSetupActivity.java           |  34 ++
+ .../input/widget/SetupFragment.java                | 116 ++++
+ .../input/widget/WebViewActivity.java              |  29 +
+ .../input/widget/WebViewFragment.java              |  47 ++
+ app/src/main/res/anim/side_panel_enter.xml         |  27 +
+ app/src/main/res/anim/side_panel_exit.xml          |  27 +
+ app/src/main/res/drawable/badge.jpg                | Bin 0 -> 25563 bytes
+ app/src/main/res/drawable/movie.jpg                | Bin 0 -> 19634 bytes
+ .../res/layout/channel_link_details_fragment.xml   |  21 +
+ .../main/res/layout/channel_link_side_panel.xml    |  50 ++
+ app/src/main/res/layout/setup.xml                  |  20 +
+ app/src/main/res/layout/side_panel_item.xml        |  31 +
+ app/src/main/res/layout/subtitleview.xml           |  25 +
+ app/src/main/res/layout/web.xml                    |  19 +
+ app/src/main/res/layout/web_fragment.xml           |  19 +
+ app/src/main/res/raw/input_xmltv_feed.xml          | 146 +++++
+ app/src/main/res/values/colors.xml                 |  10 +
+ app/src/main/res/values/constants.xml              |  19 +
+ app/src/main/res/values/dims.xml                   |  14 +
+ app/src/main/res/values/integers.xml               |  18 +
+ app/src/main/res/values/strings.xml                |  24 +
+ app/src/main/res/values/themes.xml                 |  18 +
+ app/src/main/res/xml/inputservice.xml              |  18 +
+ build.gradle                                       |   2 +-
+ local.properties                                   |   1 -
+ xmltv.dtd                                          | 666 +++++++++++++++++++++
+ 41 files changed, 2671 insertions(+), 8 deletions(-)
+ create mode 100644 INPUT.md
+ create mode 100644 app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/player/ExtractorRendererBuilder.java
+ create mode 100644 app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/player/LeanbackPlayer.java
+ create mode 100644 app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/player/RendererBuilderFactory.java
+ create mode 100644 app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/service/LeanbackTvProgramSync.java
+ create mode 100644 app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/service/SyncJobReceiver.java
+ create mode 100644 app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/service/TvInputService.java
+ create mode 100644 app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/ChannelFeedUtil.java
+ create mode 100644 app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/ChannelLinkDetailsActivity.java
+ create mode 100644 app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/ChannelLinkDetailsFragment.java
+ create mode 100644 app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/ChannelLinkSidePanelActivity.java
+ create mode 100644 app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/InputSetupActivity.java
+ create mode 100644 app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/SetupFragment.java
+ create mode 100644 app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/WebViewActivity.java
+ create mode 100644 app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/WebViewFragment.java
+ create mode 100644 app/src/main/res/anim/side_panel_enter.xml
+ create mode 100644 app/src/main/res/anim/side_panel_exit.xml
+ create mode 100644 app/src/main/res/drawable/badge.jpg
+ create mode 100644 app/src/main/res/drawable/movie.jpg
+ create mode 100644 app/src/main/res/layout/channel_link_details_fragment.xml
+ create mode 100644 app/src/main/res/layout/channel_link_side_panel.xml
+ create mode 100644 app/src/main/res/layout/setup.xml
+ create mode 100644 app/src/main/res/layout/side_panel_item.xml
+ create mode 100644 app/src/main/res/layout/subtitleview.xml
+ create mode 100644 app/src/main/res/layout/web.xml
+ create mode 100644 app/src/main/res/layout/web_fragment.xml
+ create mode 100644 app/src/main/res/raw/input_xmltv_feed.xml
+ create mode 100644 app/src/main/res/values/constants.xml
+ create mode 100644 app/src/main/res/values/integers.xml
+ create mode 100644 app/src/main/res/xml/inputservice.xml
+ delete mode 100644 local.properties
+ create mode 100644 xmltv.dtd
+
+diff --git a/.gitignore b/.gitignore
+index 08a55c0..ab5b6de 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1 +1,5 @@
+ .gradle
++build/
++.idea/
++local.properties
++*.iml
+diff --git a/INPUT.md b/INPUT.md
+new file mode 100644
+index 0000000..e69de29
+diff --git a/README.md b/README.md
+index c4924ad..2357385 100644
+--- a/README.md
++++ b/README.md
+@@ -35,9 +35,10 @@ If you use Android Studio as recommended, the following dependencies will **auto
+ git clone https://github.com/googlesamples/leanback-showcase.git
+ ```
+ 
+-- In the local.properties file add the location to your Android SDK (You need to install Android SDK 'N').
++- Create a local.properties file if you haven't set ANDROID_HOME (You need to install Android SDK 'N').
+ - Open the project in [Android Studio][studio].
+ - Compile and deploy to your Android TV emulator or device (such as a Nexus Player).
++- Open Live Channels [App][live] in your Android TV to add simulated TV channel service.
+ 
+ 
+ ## Screenshots
+@@ -67,3 +68,4 @@ Licensed under the Apache 2.0 license. See the [LICENSE file][license] for detai
+ [bugs]: https://github.com/googlesamples/androidtv-Leanback/issues/new
+ [contributing]: CONTRIBUTING.md
+ [license]: LICENSE
++[live]: https://play.google.com/store/apps/details?id=com.google.android.tv&amp;hl=en
+\ No newline at end of file
+diff --git a/app/build.gradle b/app/build.gradle
+index 5d5a486..ab58cff 100644
+--- a/app/build.gradle
++++ b/app/build.gradle
+@@ -1,13 +1,13 @@
+ apply plugin: 'com.android.application'
+ 
+ android {
+-    compileSdkVersion 'android-O'
+-    buildToolsVersion '26.0.0-rc2'
++    compileSdkVersion 'android-26'
++    buildToolsVersion '26.0.0'
+ 
+     defaultConfig {
+         applicationId "android.support.v17.leanback.supportleanbackshowcase"
+-        minSdkVersion 17
+-        targetSdkVersion 'O'
++        minSdkVersion 21
++        targetSdkVersion 26
+         versionCode 1
+         versionName "1.0"
+         multiDexEnabled true
+@@ -35,5 +35,5 @@ dependencies {
+     compile 'com.google.android.exoplayer:exoplayer:r2.2.0'
+ 
+     compile 'com.github.bumptech.glide:glide:3.7.0'
+-
++    compile 'com.google.android.libraries.tv:companionlibrary:0.1'
+ }
+diff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml
+index beaedba..d8a5e94 100644
+--- a/app/src/main/AndroidManifest.xml
++++ b/app/src/main/AndroidManifest.xml
+@@ -7,6 +7,17 @@
+     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+ 
++
++    <!-- Required to update or read existing channel and program information in TvProvider. -->
++    <uses-permission android:name="com.android.providers.tv.permission.READ_EPG_DATA" />
++
++    <!-- Required to update channel and program information in TvProvider. -->
++    <uses-permission android:name="com.android.providers.tv.permission.WRITE_EPG_DATA" />
++
++    <!-- Required to sync EPG data after reboot. For details,
++    please see {@link JobInfo.Builder#setPersisted}-->
++    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
++
+     <uses-feature
+         android:name="android.hardware.touchscreen"
+         android:required="false"/>
+@@ -14,6 +25,11 @@
+         android:name="android.software.leanback"
+         android:required="true"/>
+ 
++
++    <uses-feature
++        android:name="android.software.live_tv"
++        android:required="true" />
++
+     <application
+         android:allowBackup="true"
+         android:icon="@mipmap/app_banner_sample_app"
+@@ -92,6 +108,82 @@
+             android:theme="@style/Theme.Example.LeanbackMusic"/>
+ 
+         <service android:exported="false" android:name=".app.media.MusicPlaybackService"/>
++
++
++        <!-- Launched by the TV app before it uses TvInputService. This registers channels and
++        sets up LeanbackTvProgramSync to provide program information in the background. -->
++        <activity android:name=".input.widget.InputSetupActivity" >
++            <intent-filter>
++                <action android:name="android.intent.action.MAIN" />
++            </intent-filter>
++        </activity>
++
++        <!-- A full-screen activity which will be launched by the TV app when a user clicks
++        the app-link connected to this activity. -->
++        <activity
++            android:name=".input.widget.ChannelLinkDetailsActivity"
++            android:theme="@style/Theme.Transparent">
++            <intent-filter>
++                <action android:name="android.intent.action.MAIN" />
++            </intent-filter>
++        </activity>
++
++        <activity
++            android:name=".input.widget.WebViewActivity"
++            android:theme="@style/Theme.Transparent">
++            <intent-filter>
++                <action android:name="android.intent.action.MAIN" />
++            </intent-filter>
++        </activity>
++
++        <!-- A side-panel activity which will be launched by the TV app when a user clicks
++        the app-link connected to this activity. -->
++        <activity
++            android:name=".input.widget.ChannelLinkSidePanelActivity"
++            android:theme="@style/Theme.Panel">
++            <intent-filter>
++                <action android:name="android.intent.action.MAIN" />
++            </intent-filter>
++        </activity>
++
++        <!-- TV input which provides channels based on the streaming contents.
++        Requires "android.permission.BIND_TV_INPUT" to ensure that only system services can bind.
++        This provides the full implementation of TvInputService including EPG, subtitles,
++        multi-audio, parental controls, and overlay view.
++        -->
++        <service
++            android:name=".input.service.TvInputService"
++            android:label="@string/label"
++            android:permission="android.permission.BIND_TV_INPUT">
++            <!-- Required filter used by the system to launch our account service. -->
++            <intent-filter>
++                <action android:name="android.media.tv.TvInputService" />
++            </intent-filter>
++            <!-- An XML file which describes this input. This provides pointers to the
++            InputSetupActivity to the system/TV app. -->
++            <meta-data
++                android:name="android.media.tv.input"
++                android:resource="@xml/inputservice" />
++        </service>
++
++        <!-- This service is for using JobScheduler to sync EPG data. -->
++        <service
++            android:name=".input.service.LeanbackTvProgramSync"
++            android:permission="android.permission.BIND_JOB_SERVICE"
++            android:exported="true" />
++
++        <!-- This receiver is for sync job schedule well after reboot. -->
++        <receiver android:name=".input.service.SyncJobReceiver">
++            <intent-filter>
++                <action android:name="android.intent.action.BOOT_COMPLETED" />
++            </intent-filter>
++        </receiver>
++
++        <!-- Required by IMA SDK to fetch the version number of Google Play Service -->
++        <meta-data
++            android:name="com.google.android.gms.version"
++            android:value="@integer/google_play_services_version" />
++
+     </application>
+ 
+ </manifest>
+diff --git a/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/player/ExtractorRendererBuilder.java b/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/player/ExtractorRendererBuilder.java
+new file mode 100644
+index 0000000..d6c6776
+--- /dev/null
++++ b/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/player/ExtractorRendererBuilder.java
+@@ -0,0 +1,64 @@
++/*
++ * Copyright (c) 2016 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package android.support.v17.leanback.supportleanbackshowcase.input.player;
++
++import android.content.Context;
++import android.net.Uri;
++
++import com.google.android.exoplayer2.audio.AudioCapabilities;
++import com.google.android.exoplayer2.audio.MediaCodecAudioRenderer;
++import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
++import com.google.android.exoplayer2.mediacodec.MediaCodecSelector;
++import com.google.android.exoplayer2.source.ExtractorMediaSource;
++import com.google.android.exoplayer2.source.MediaSource;
++import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
++
++public class ExtractorRendererBuilder implements LeanbackPlayer.RendererBuilder {
++
++    private final Context context;
++    private final String userAgent;
++    private final Uri uri;
++
++    public ExtractorRendererBuilder(Context context, String userAgent, Uri uri) {
++        this.context = context;
++        this.userAgent = userAgent;
++        this.uri = uri;
++
++    }
++
++    @Override
++    public void buildRenderers(LeanbackPlayer player) {
++        MediaSource mMediaSource = new ExtractorMediaSource(uri,
++                new DefaultDataSourceFactory(context, userAgent), new DefaultExtractorsFactory()
++                , null, null);
++
++        MediaCodecAudioRenderer audioRenderer = new MediaCodecAudioRenderer(
++                MediaCodecSelector.DEFAULT,
++                null,
++                true,
++                player.getMainHandler(),
++                player,
++                AudioCapabilities.getCapabilities(context));
++
++        player.onRenderers(audioRenderer, mMediaSource);
++    }
++
++    @Override
++    public void cancel() {
++        // Do nothing.
++    }
++}
+diff --git a/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/player/LeanbackPlayer.java b/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/player/LeanbackPlayer.java
+new file mode 100644
+index 0000000..a8d1c06
+--- /dev/null
++++ b/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/player/LeanbackPlayer.java
+@@ -0,0 +1,292 @@
++/*
++ * Copyright (C) 2016 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package android.support.v17.leanback.supportleanbackshowcase.input.player;
++
++import android.content.Context;
++import android.media.PlaybackParams;
++import android.os.Handler;
++import android.view.Surface;
++
++import com.google.android.exoplayer2.C;
++import com.google.android.exoplayer2.DefaultLoadControl;
++import com.google.android.exoplayer2.ExoPlaybackException;
++import com.google.android.exoplayer2.ExoPlayer;
++import com.google.android.exoplayer2.ExoPlayerFactory;
++import com.google.android.exoplayer2.Format;
++import com.google.android.exoplayer2.Renderer;
++import com.google.android.exoplayer2.SimpleExoPlayer;
++import com.google.android.exoplayer2.Timeline;
++import com.google.android.exoplayer2.audio.AudioRendererEventListener;
++import com.google.android.exoplayer2.decoder.DecoderCounters;
++import com.google.android.exoplayer2.source.MediaSource;
++import com.google.android.exoplayer2.source.TrackGroupArray;
++import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
++import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
++import com.google.android.media.tv.companionlibrary.TvPlayer;
++
++import java.util.List;
++import java.util.concurrent.CopyOnWriteArrayList;
++
++public class LeanbackPlayer implements
++        SimpleExoPlayer.VideoListener,
++        ExoPlayer.EventListener,
++        AudioRendererEventListener,
++        TvPlayer {
++    private static final int STATE_IDLE = ExoPlayer.STATE_IDLE;
++    private static final int STATE_PREPARING = ExoPlayer.STATE_BUFFERING;
++    private static final int RENDERER_BUILDING_STATE_IDLE = 1;
++    private static final int RENDERER_BUILDING_STATE_BUILDING = 2;
++    private static final int RENDERER_BUILDING_STATE_BUILT = 3;
++
++    private final RendererBuilder rendererBuilder;
++    private final SimpleExoPlayer player;
++    private final Handler mainHandler;
++    private final CopyOnWriteArrayList<Listener> listeners;
++    private final List<Callback> mTvPlayerCallbacks;
++
++    private int rendererBuildingState;
++    private int lastReportedPlaybackState;
++    private boolean lastReportedPlayWhenReady;
++
++    private Renderer mAudioRenderer;
++
++    /* package */ interface RendererBuilder {
++        void buildRenderers(LeanbackPlayer player);
++
++        void cancel();
++    }
++
++    public interface Listener {
++        void onStateChanged(boolean playWhenReady, int playbackState);
++    }
++
++    public LeanbackPlayer(RendererBuilder rendererBuilder, Context context) {
++        this.rendererBuilder = rendererBuilder;
++        player = ExoPlayerFactory.newSimpleInstance
++                (context, new DefaultTrackSelector(), new DefaultLoadControl());
++        player.setVideoListener(this);
++        player.addListener(this);
++        mainHandler = new Handler();
++        listeners = new CopyOnWriteArrayList<>();
++        mTvPlayerCallbacks = new CopyOnWriteArrayList<>();
++        lastReportedPlaybackState = STATE_IDLE;
++        rendererBuildingState = RENDERER_BUILDING_STATE_IDLE;
++    }
++
++    public void addListener(Listener listener) {
++        listeners.add(listener);
++    }
++
++    public void removeListener(Listener listener) {
++        listeners.remove(listener);
++    }
++
++    public void prepare() {
++        if (rendererBuildingState == RENDERER_BUILDING_STATE_BUILT) {
++            player.stop();
++        }
++        rendererBuilder.cancel();
++        rendererBuildingState = RENDERER_BUILDING_STATE_BUILDING;
++        maybeReportPlayerState();
++        rendererBuilder.buildRenderers(this);
++    }
++
++    /* package */ void onRenderers(Renderer audioRenderer, MediaSource mMediaSource) {
++        this.mAudioRenderer = audioRenderer;
++        player.prepare(mMediaSource);
++        rendererBuildingState = RENDERER_BUILDING_STATE_BUILT;
++    }
++
++    public void setPlayWhenReady(boolean playWhenReady) {
++        player.setPlayWhenReady(playWhenReady);
++    }
++
++    public void seekTo(long positionMs) {
++        player.seekTo(positionMs);
++    }
++
++    public void release() {
++        rendererBuilder.cancel();
++        rendererBuildingState = RENDERER_BUILDING_STATE_IDLE;
++        player.release();
++    }
++
++    private int getPlaybackState() {
++        if (rendererBuildingState == RENDERER_BUILDING_STATE_BUILDING) {
++            return STATE_PREPARING;
++        }
++        int playerState = player.getPlaybackState();
++        if (rendererBuildingState == RENDERER_BUILDING_STATE_BUILT && playerState == STATE_IDLE) {
++            return STATE_PREPARING;
++        }
++        return playerState;
++    }
++
++    /* package */ Handler getMainHandler() {
++        return mainHandler;
++    }
++
++    /**
++     * Implement TvPlayer interface
++     */
++    @Override
++    public void setVolume(float volume) {
++        ExoPlayer.ExoPlayerMessage m = new ExoPlayer.ExoPlayerMessage(mAudioRenderer, C.MSG_SET_VOLUME, volume);
++        player.sendMessages(m);
++    }
++
++    @Override
++    public void setSurface(Surface surface) {
++        player.setVideoSurface(surface);
++    }
++
++    @Override
++    public void registerCallback(Callback callback) {
++        mTvPlayerCallbacks.add(callback);
++    }
++
++    @Override
++    public void unregisterCallback(Callback callback) {
++        mTvPlayerCallbacks.remove(callback);
++    }
++
++    @Override
++    public void setPlaybackParams(PlaybackParams params) {
++    }
++
++    @Override
++    public long getCurrentPosition() {
++        return player.getCurrentPosition();
++    }
++
++    @Override
++    public long getDuration() {
++        return player.getDuration();
++    }
++
++    @Override
++    public void pause() {
++        player.setPlayWhenReady(false);
++    }
++
++    @Override
++    public void play() {
++        player.setPlayWhenReady(true);
++    }
++
++    public void stop() {
++        player.stop();
++    }
++
++    /**
++     * Implement Exoplayer.EventListener interface
++     */
++    @Override
++    public void onTimelineChanged(Timeline timeline, Object manifest) {
++        // Do nothing.
++    }
++
++    @Override
++    public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
++        // Do nothing.
++    }
++
++    @Override
++    public void onLoadingChanged(boolean isLoading) {
++        // Do nothing.
++    }
++
++    @Override
++    public void onPlayerError(ExoPlaybackException error) {
++        // Do nothing.
++    }
++
++    @Override
++    public void onPositionDiscontinuity() {
++        // Do nothing.
++    }
++
++    @Override
++    public void onPlayerStateChanged(boolean playWhenReady, int state) {
++        for (Callback tvCallback : mTvPlayerCallbacks) {
++            if (playWhenReady && state == ExoPlayer.STATE_ENDED) {
++                tvCallback.onCompleted();
++            } else if (playWhenReady && state == ExoPlayer.STATE_READY) {
++                tvCallback.onStarted();
++            }
++        }
++        maybeReportPlayerState();
++    }
++
++    private void maybeReportPlayerState() {
++        boolean playWhenReady = player.getPlayWhenReady();
++        int playbackState = getPlaybackState();
++        if (lastReportedPlayWhenReady != playWhenReady ||
++                lastReportedPlaybackState != playbackState) {
++            for (Listener listener : listeners) {
++                listener.onStateChanged(playWhenReady, playbackState);
++            }
++            lastReportedPlayWhenReady = playWhenReady;
++            lastReportedPlaybackState = playbackState;
++        }
++    }
++
++    /**
++     * Implement AudioRendererEventListener
++     */
++    @Override
++    public void onAudioEnabled(DecoderCounters counters) {
++        // Do nothing.
++    }
++
++    @Override
++    public void onAudioSessionId(int audioSessionId) {
++        // Do nothing.
++
++    }
++
++    @Override
++    public void onAudioDecoderInitialized(String decoderName, long initializedTimestampMs, long initializationDurationMs) {
++        // Do nothing.
++    }
++
++    @Override
++    public void onAudioInputFormatChanged(Format format) {
++        // Do nothing.
++    }
++
++    @Override
++    public void onAudioTrackUnderrun(int bufferSize, long bufferSizeMs, long elapsedSinceLastFeedMs) {
++        // Do nothing.
++    }
++
++    @Override
++    public void onAudioDisabled(DecoderCounters counters) {
++        // Do nothing.
++    }
++
++
++    @Override
++    public void onVideoSizeChanged(int width, int height, int unappliedRotationDegrees, float pixelWidthHeightRatio) {
++        // Do nothing.
++    }
++
++    @Override
++    public void onRenderedFirstFrame() {
++        // Do nothing.
++    }
++}
+diff --git a/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/player/RendererBuilderFactory.java b/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/player/RendererBuilderFactory.java
+new file mode 100644
+index 0000000..6800022
+--- /dev/null
++++ b/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/player/RendererBuilderFactory.java
+@@ -0,0 +1,40 @@
++/*
++ * Copyright (c) 2016 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package android.support.v17.leanback.supportleanbackshowcase.input.player;
++
++import android.content.Context;
++import android.net.Uri;
++
++import com.google.android.exoplayer2.util.Util;
++import com.google.android.media.tv.companionlibrary.utils.TvContractUtils;
++
++public class RendererBuilderFactory {
++
++    public static LeanbackPlayer.RendererBuilder createRendererBuilder(
++            Context context, int contentType, Uri contentUri) {
++        String userAgent = Util.getUserAgent(context, "ExoVideoPlayer");
++
++        switch (contentType) {
++            case TvContractUtils.SOURCE_TYPE_HTTP_PROGRESSIVE: {
++                return new ExtractorRendererBuilder(context, userAgent, contentUri);
++            }
++            default: {
++                throw new IllegalStateException("Unsupported type: " + contentType);
++            }
++        }
++    }
++}
+diff --git a/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/service/LeanbackTvProgramSync.java b/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/service/LeanbackTvProgramSync.java
+new file mode 100644
+index 0000000..9952c8b
+--- /dev/null
++++ b/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/service/LeanbackTvProgramSync.java
+@@ -0,0 +1,80 @@
++/*
++ * Copyright 2016 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package android.support.v17.leanback.supportleanbackshowcase.input.service;
++
++import android.net.Uri;
++import android.support.v17.leanback.supportleanbackshowcase.input.widget.ChannelFeedUtil;
++
++
++import com.google.android.media.tv.companionlibrary.model.Advertisement;
++import com.google.android.media.tv.companionlibrary.model.Channel;
++import com.google.android.media.tv.companionlibrary.model.Program;
++import com.google.android.media.tv.companionlibrary.EpgSyncJobService;
++import com.google.android.media.tv.companionlibrary.XmlTvParser;
++
++import java.util.ArrayList;
++import java.util.List;
++
++/**
++ * EpgSyncJobService that periodically runs to update channels and programs.
++ */
++public class LeanbackTvProgramSync extends EpgSyncJobService {
++    private String MPEG_DASH_CHANNEL_NAME = "MPEG_DASH";
++    /**
++     * Test <a href="http://www.iab.com/guidelines/digital-video-ad-serving-template-vast-3-0/">
++     * VAST</a> URL from <a href="https://www.google.com/dfp">DoubleClick for Publishers (DFP)</a>.
++     * More sample VAST tags can be found on
++     * <a href="https://developers.google.com/interactive-media-ads/docs/sdks/android/tags">DFP
++     * website</a>. You should replace it with the vast tag that you applied from your
++     * advertisement provider. To verify whether your video ad response is VAST compliant, try<a
++     * href="https://developers.google.com/interactive-media-ads/docs/sdks/android/vastinspector">
++     * Google Ads Mobile Video Suite Inspector</a>
++     */
++    private static String TEST_AD_REQUEST_URL =
++            "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/" +
++                    "single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast" +
++                    "&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct" +
++                    "%3Dlinear&correlator=";
++
++    @Override
++    public List<Channel> getChannels() {
++        // Add channels through an XMLTV file
++        XmlTvParser.TvListing listings = ChannelFeedUtil.getTvListings(this);
++        List<Channel> channelList = new ArrayList<>(listings.getChannels());
++
++        // Build advertisement list for the channel.
++        Advertisement channelAd = new Advertisement.Builder()
++                .setType(Advertisement.TYPE_VAST)
++                .setRequestUrl(TEST_AD_REQUEST_URL)
++                .build();
++        List<Advertisement> channelAdList = new ArrayList<>();
++        channelAdList.add(channelAd);
++        return channelList;
++    }
++
++    @Override
++    public List<Program> getProgramsForChannel(Uri channelUri, Channel channel, long startMs,
++                                               long endMs) {
++        if (!channel.getDisplayName().equals(MPEG_DASH_CHANNEL_NAME)) {
++            // Is an XMLTV Channel
++            XmlTvParser.TvListing listings = ChannelFeedUtil.getTvListings(getApplicationContext());
++            return listings.getPrograms(channel);
++        } else {
++            return null;
++        }
++    }
++}
++
+diff --git a/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/service/SyncJobReceiver.java b/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/service/SyncJobReceiver.java
+new file mode 100644
+index 0000000..1ace3b3
+--- /dev/null
++++ b/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/service/SyncJobReceiver.java
+@@ -0,0 +1,61 @@
++/*
++ * Copyright 2016 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package android.support.v17.leanback.supportleanbackshowcase.input.service;
++
++import android.app.job.JobInfo;
++import android.app.job.JobScheduler;
++import android.content.BroadcastReceiver;
++import android.content.ComponentName;
++import android.content.Context;
++import android.content.Intent;
++import android.os.Build;
++
++import com.google.android.media.tv.companionlibrary.EpgSyncJobService;
++
++import java.util.List;
++
++/**
++ * This BroadcastReceiver is set up to make sure sync job can schedule after reboot. Because
++ * JobScheduler doesn't work well on reboot scheduler on L/L-MR1.
++ */
++public class SyncJobReceiver extends BroadcastReceiver {
++    @Override
++    public void onReceive(Context context, Intent intent) {
++        JobScheduler jobScheduler =
++                (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
++        // If there are not pending jobs. Create a sync job and schedule it.
++        List<JobInfo> pendingJobs = jobScheduler.getAllPendingJobs();
++        if (pendingJobs.isEmpty()) {
++            String inputId = context.getSharedPreferences(EpgSyncJobService.PREFERENCE_EPG_SYNC,
++                    Context.MODE_PRIVATE).getString(EpgSyncJobService.BUNDLE_KEY_INPUT_ID, null);
++            if (inputId != null) {
++                // Set up periodic sync only when input has set up.
++                EpgSyncJobService.setUpPeriodicSync(context, inputId,
++                        new ComponentName(context, LeanbackTvProgramSync.class));
++            }
++            return;
++        }
++        // On L/L-MR1, reschedule the pending jobs.
++        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
++            for (JobInfo job : pendingJobs) {
++                if (job.isPersisted()) {
++                    jobScheduler.schedule(job);
++                }
++            }
++        }
++    }
++}
+diff --git a/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/service/TvInputService.java b/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/service/TvInputService.java
+new file mode 100644
+index 0000000..10ab163
+--- /dev/null
++++ b/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/service/TvInputService.java
+@@ -0,0 +1,283 @@
++/*
++ * Copyright 2015 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package android.support.v17.leanback.supportleanbackshowcase.input.service;
++
++import android.content.ComponentName;
++import android.content.Context;
++import android.media.tv.TvContentRating;
++import android.media.tv.TvInputManager;
++import android.media.tv.TvTrackInfo;
++import android.net.Uri;
++import android.os.Build;
++import android.os.Handler;
++import android.os.Looper;
++import android.support.annotation.Nullable;
++import android.support.annotation.RequiresApi;
++import android.support.v17.leanback.supportleanbackshowcase.input.player.LeanbackPlayer;
++import android.support.v17.leanback.supportleanbackshowcase.input.player.RendererBuilderFactory;
++import android.util.Log;
++
++import com.google.android.media.tv.companionlibrary.BaseTvInputService;
++import com.google.android.media.tv.companionlibrary.EpgSyncJobService;
++import com.google.android.media.tv.companionlibrary.TvPlayer;
++import com.google.android.media.tv.companionlibrary.model.Advertisement;
++import com.google.android.media.tv.companionlibrary.model.Channel;
++import com.google.android.media.tv.companionlibrary.model.InternalProviderData;
++import com.google.android.media.tv.companionlibrary.model.Program;
++import com.google.android.media.tv.companionlibrary.model.RecordedProgram;
++import com.google.android.media.tv.companionlibrary.utils.TvContractUtils;
++
++
++/**
++ * TvInputService which provides a full implementation of EPG, subtitles, multi-audio, parental
++ * controls, and overlay view.
++ */
++public class TvInputService extends BaseTvInputService {
++    private static final boolean DEBUG = true;
++    private static final long EPG_SYNC_DELAYED_PERIOD_MS = 1000 * 2; // 2 Seconds
++
++
++    /**
++     * Gets the track id of the track type and track index.
++     *
++     * @param trackType  the type of the track e.g. TvTrackInfo.TYPE_AUDIO
++     * @param trackIndex the index of that track within the media. e.g. 0, 1, 2...
++     * @return the track id for the type & index combination.
++     */
++    private static String getTrackId(int trackType, int trackIndex) {
++        return trackType + "-" + trackIndex;
++    }
++
++
++    @Override
++    public void onCreate() {
++        super.onCreate();
++    }
++
++    @Override
++    public final Session onCreateSession(String inputId) {
++        TvInputSessionImpl session = new TvInputSessionImpl(this, inputId);
++        session.setOverlayViewEnabled(true);
++        return super.sessionCreated(session);
++    }
++
++    @RequiresApi(api = Build.VERSION_CODES.N)
++    @Nullable
++    @Override
++    public android.media.tv.TvInputService.RecordingSession onCreateRecordingSession(String inputId) {
++        return new RecordingSession(this, inputId);
++    }
++
++    class TvInputSessionImpl extends BaseTvInputService.Session implements
++            LeanbackPlayer.Listener{
++        private static final String UNKNOWN_LANGUAGE = "und";
++
++        private LeanbackPlayer mPlayer;
++        private String mInputId;
++        private Context mContext;
++
++        TvInputSessionImpl(Context context, String inputId) {
++            super(context, inputId);
++            mContext = context;
++            mInputId = inputId;
++        }
++
++        @Override
++        public boolean onPlayProgram(Program program, long startPosMs) {
++            if (program == null) {
++                requestEpgSync(getCurrentChannelUri());
++                notifyVideoUnavailable(TvInputManager.VIDEO_UNAVAILABLE_REASON_TUNING);
++                return false;
++            }
++            createPlayer(program.getInternalProviderData().getVideoType(),
++                    Uri.parse(program.getInternalProviderData().getVideoUrl()));
++            if (startPosMs > 0) {
++                mPlayer.seekTo(startPosMs);
++            }
++            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
++                notifyTimeShiftStatusChanged(TvInputManager.TIME_SHIFT_STATUS_AVAILABLE);
++            }
++            mPlayer.setPlayWhenReady(true);
++            return true;
++        }
++
++        @RequiresApi(api = Build.VERSION_CODES.N)
++        public boolean onPlayRecordedProgram(RecordedProgram recordedProgram) {
++            createPlayer(recordedProgram.getInternalProviderData().getVideoType(),
++                    Uri.parse(recordedProgram.getInternalProviderData().getVideoUrl()));
++
++            long recordingStartTime = recordedProgram.getInternalProviderData()
++                    .getRecordedProgramStartTime();
++            mPlayer.seekTo(recordingStartTime - recordedProgram.getStartTimeUtcMillis());
++            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
++                notifyTimeShiftStatusChanged(TvInputManager.TIME_SHIFT_STATUS_AVAILABLE);
++            }
++            mPlayer.setPlayWhenReady(true);
++            return true;
++        }
++
++        public TvPlayer getTvPlayer() {
++            return mPlayer;
++        }
++
++        @Override
++        public boolean onTune(Uri channelUri) {
++            notifyVideoUnavailable(TvInputManager.VIDEO_UNAVAILABLE_REASON_TUNING);
++            releasePlayer();
++            return super.onTune(channelUri);
++        }
++
++        @Override
++        public void onPlayAdvertisement(Advertisement advertisement) {
++            createPlayer(TvContractUtils.SOURCE_TYPE_HTTP_PROGRESSIVE,
++                    Uri.parse(advertisement.getRequestUrl()));
++        }
++
++        private void createPlayer(int videoType, Uri videoUrl) {
++            releasePlayer();
++            mPlayer = new LeanbackPlayer(RendererBuilderFactory.createRendererBuilder(
++                    mContext, videoType, videoUrl), mContext);
++            mPlayer.addListener(this);
++            mPlayer.prepare();
++        }
++
++        @Override
++        public void onSetCaptionEnabled(boolean enabled) {
++        }
++
++        @Override
++        public boolean onSelectTrack(int type, String trackId) {
++            return false;
++        }
++
++        private void releasePlayer() {
++            if (mPlayer != null) {
++                mPlayer.removeListener(this);
++                mPlayer.setSurface(null);
++                mPlayer.stop();
++                mPlayer.release();
++                mPlayer = null;
++            }
++        }
++
++        @Override
++        public void onRelease() {
++            super.onRelease();
++            releasePlayer();
++        }
++
++        @Override
++        public void onBlockContent(TvContentRating rating) {
++            super.onBlockContent(rating);
++            releasePlayer();
++        }
++
++
++        @Override
++        public void onStateChanged(boolean playWhenReady, int playbackState) {
++            if (mPlayer == null) {
++                return;
++            }
++
++            if (playWhenReady ) {
++                String audioId = getTrackId(TvTrackInfo.TYPE_AUDIO,
++                        0);
++                String videoId = getTrackId(TvTrackInfo.TYPE_VIDEO,
++                        0);
++
++                notifyTrackSelected(TvTrackInfo.TYPE_AUDIO, audioId);
++                notifyTrackSelected(TvTrackInfo.TYPE_VIDEO, videoId);
++                notifyVideoAvailable();
++            }
++        }
++
++
++        public void requestEpgSync(final Uri channelUri) {
++            EpgSyncJobService.requestImmediateSync(TvInputService.this, mInputId,
++                    new ComponentName(TvInputService.this, LeanbackTvProgramSync.class));
++            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
++                @Override
++                public void run() {
++                    onTune(channelUri);
++                }
++            }, EPG_SYNC_DELAYED_PERIOD_MS);
++        }
++    }
++
++    @RequiresApi(api = Build.VERSION_CODES.N)
++    private class RecordingSession extends BaseTvInputService.RecordingSession {
++        private static final String TAG = "RecordingSession";
++        private String mInputId;
++        private long mStartTimeMs;
++
++        public RecordingSession(Context context, String inputId) {
++            super(context, inputId);
++            mInputId = inputId;
++        }
++
++        @Override
++        public void onTune(Uri uri) {
++            super.onTune(uri);
++            if (DEBUG) {
++                Log.d(TAG, "onStartRecording");
++            }
++            mStartTimeMs = System.currentTimeMillis();
++        }
++
++        @Override
++        public void onStopRecording(Program programToRecord) {
++            if (DEBUG) {
++                Log.d(TAG, "onStopRecording");
++            }
++            // In this sample app, since all of the content is VOD, the video URL is stored.
++            // If the video was live, the start and stop times should be noted using
++            // RecordedProgram.Builder.setStartTimeUtcMillis and .setEndTimeUtcMillis.
++            // The recordingstart time will be saved in the InternalProviderData.
++            // Additionally, the stream should be recorded and saved as
++            // a new file.
++            long currentTime = System.currentTimeMillis();
++            InternalProviderData internalProviderData = programToRecord.getInternalProviderData();
++            internalProviderData.setRecordingStartTime(mStartTimeMs);
++            RecordedProgram recordedProgram = new RecordedProgram.Builder(programToRecord)
++                        .setInputId(mInputId)
++                        .setRecordingDataUri(
++                                programToRecord.getInternalProviderData().getVideoUrl())
++                        .setRecordingDurationMillis(currentTime - mStartTimeMs)
++                        .setInternalProviderData(internalProviderData)
++                        .build();
++            notifyRecordingStopped(recordedProgram);
++        }
++
++        @Override
++        public void onStopRecordingChannel(Channel channelToRecord) {
++            if (DEBUG) {
++                Log.d(TAG, "onStopRecording");
++            }
++            // Program sources in this sample always include program info, so execution here
++            // indicates an error.
++            notifyError(TvInputManager.RECORDING_ERROR_UNKNOWN);
++            return;
++        }
++
++        @Override
++        public void onRelease() {
++            if (DEBUG) {
++                Log.d(TAG, "onRelease");
++            }
++        }
++    }
++}
+diff --git a/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/ChannelFeedUtil.java b/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/ChannelFeedUtil.java
+new file mode 100644
+index 0000000..de9b9e8
+--- /dev/null
++++ b/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/ChannelFeedUtil.java
+@@ -0,0 +1,89 @@
++/*
++ * Copyright 2015 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package android.support.v17.leanback.supportleanbackshowcase.input.widget;
++
++import android.content.ContentResolver;
++import android.content.Context;
++import android.net.Uri;
++import android.support.v17.leanback.supportleanbackshowcase.R;
++import android.util.Log;
++
++import com.google.android.media.tv.companionlibrary.XmlTvParser;
++
++import java.io.BufferedInputStream;
++import java.io.IOException;
++import java.io.InputStream;
++import java.net.URL;
++import java.net.URLConnection;
++
++/**
++ * Static helper methods for fetching the channel feed.
++ */
++public class ChannelFeedUtil {
++    private static final String TAG = "ChannelFeedUtil";
++
++    // A key for the channel display number used in the app link intent from the xmltv_feed.
++    public static final String EXTRA_DISPLAY_NUMBER = "display-number";
++
++    private static XmlTvParser.TvListing sSampleTvListing;
++
++    // For this sample we will use the local XML TV feed. In your real app, you will want to use a
++    // remote feed to provide your users with up to date channel listings.
++    private static final boolean USE_LOCAL_XML_FEED = true;
++
++    private static final int URLCONNECTION_CONNECTION_TIMEOUT_MS = 3000;  // 3 sec
++    private static final int URLCONNECTION_READ_TIMEOUT_MS = 10000;  // 10 sec
++
++    private ChannelFeedUtil() {
++    }
++
++    public static XmlTvParser.TvListing getTvListings(Context context) {
++        Uri catalogUri = USE_LOCAL_XML_FEED
++                ? Uri.parse("android.resource://" + context.getPackageName() + "/"
++                + R.raw.input_xmltv_feed)
++                : Uri.parse(context.getResources().getString(R.string.input_feed_url))
++                .normalizeScheme();
++        if (sSampleTvListing != null) {
++            return sSampleTvListing;
++        }
++
++        try (InputStream inputStream = getInputStream(context, catalogUri)) {
++            sSampleTvListing = XmlTvParser.parse(inputStream);
++        } catch (IOException e) {
++            Log.e(TAG, "Error in fetching " + catalogUri, e);
++        } catch (XmlTvParser.XmlTvParseException e) {
++            Log.e(TAG, "Error in parsing " + catalogUri, e);
++        }
++        return sSampleTvListing;
++    }
++
++    public static InputStream getInputStream(Context context, Uri uri) throws IOException {
++        InputStream inputStream;
++        if (ContentResolver.SCHEME_ANDROID_RESOURCE.equals(uri.getScheme())
++                || ContentResolver.SCHEME_ANDROID_RESOURCE.equals(uri.getScheme())
++                || ContentResolver.SCHEME_FILE.equals(uri.getScheme())) {
++            inputStream = context.getContentResolver().openInputStream(uri);
++        } else {
++            URLConnection urlConnection = new URL(uri.toString()).openConnection();
++            urlConnection.setConnectTimeout(URLCONNECTION_CONNECTION_TIMEOUT_MS);
++            urlConnection.setReadTimeout(URLCONNECTION_READ_TIMEOUT_MS);
++            inputStream = urlConnection.getInputStream();
++        }
++
++        return inputStream == null ? null : new BufferedInputStream(inputStream);
++    }
++}
+diff --git a/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/ChannelLinkDetailsActivity.java b/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/ChannelLinkDetailsActivity.java
+new file mode 100644
+index 0000000..bb67e34
+--- /dev/null
++++ b/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/ChannelLinkDetailsActivity.java
+@@ -0,0 +1,30 @@
++/*
++ * Copyright 2015 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package android.support.v17.leanback.supportleanbackshowcase.input.widget;
++
++import android.app.Activity;
++import android.os.Bundle;
++import android.support.v17.leanback.supportleanbackshowcase.R;
++
++
++public class ChannelLinkDetailsActivity extends Activity {
++    @Override
++    protected void onCreate(Bundle savedInstanceState) {
++        super.onCreate(savedInstanceState);
++        setContentView(R.layout.channel_link_details_fragment);
++    }
++}
+diff --git a/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/ChannelLinkDetailsFragment.java b/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/ChannelLinkDetailsFragment.java
+new file mode 100644
+index 0000000..ddcdede
+--- /dev/null
++++ b/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/ChannelLinkDetailsFragment.java
+@@ -0,0 +1,104 @@
++/*
++ * Copyright 2015 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package android.support.v17.leanback.supportleanbackshowcase.input.widget;
++
++import android.content.Intent;
++import android.content.res.Resources;
++import android.graphics.Bitmap;
++import android.graphics.BitmapFactory;
++import android.os.Bundle;
++import android.support.v17.leanback.app.DetailsFragment;
++import android.support.v17.leanback.supportleanbackshowcase.R;
++import android.support.v17.leanback.widget.AbstractDetailsDescriptionPresenter;
++import android.support.v17.leanback.widget.Action;
++import android.support.v17.leanback.widget.ArrayObjectAdapter;
++import android.support.v17.leanback.widget.ClassPresenterSelector;
++import android.support.v17.leanback.widget.DetailsOverviewRow;
++import android.support.v17.leanback.widget.DetailsOverviewRowPresenter;
++import android.support.v17.leanback.widget.ListRow;
++import android.support.v17.leanback.widget.ListRowPresenter;
++import android.support.v17.leanback.widget.OnActionClickedListener;
++import android.support.v4.content.ContextCompat;
++
++
++/**
++ * Fragment that shows a simple details fragment UI.
++ */
++public class ChannelLinkDetailsFragment extends DetailsFragment {
++
++    private static final String KEY = "url";
++    @Override
++    public void onCreate(Bundle savedInstanceState) {
++        super.onCreate(savedInstanceState);
++        final String displayNumber = getActivity().getIntent().getStringExtra(
++                ChannelFeedUtil.EXTRA_DISPLAY_NUMBER);
++
++        DetailsOverviewRowPresenter dorPresenter = new DetailsOverviewRowPresenter(
++                new DetailsDescriptionPresenter());
++        dorPresenter.setSharedElementEnterTransition(getActivity(), "ChannelLinkDetailsFragment");
++
++        DetailsOverviewRow row = new DetailsOverviewRow(displayNumber);
++        final Resources res = getResources();
++        Bitmap bitmap = BitmapFactory.decodeResource(res, R.drawable.movie);
++        int length = Math.min(bitmap.getWidth(), bitmap.getHeight());
++        Bitmap croppedBitmap = Bitmap.createBitmap(bitmap,
++                (bitmap.getWidth() - length) / 2,
++                (bitmap.getHeight() - length) / 2,
++                length, length);
++        row.setImageBitmap(getActivity(), croppedBitmap);
++
++        Action action1 = new Action(0, res.getString(R.string.details_fragment_learn_more));
++        Action action2 = new Action(1, res.getString(R.string.details_fragment_close));
++        row.addAction(action1);
++        row.addAction(action2);
++
++        ClassPresenterSelector presenterSelector = new ClassPresenterSelector();
++        dorPresenter.setBackgroundColor(ContextCompat.getColor(getActivity(),
++                R.color.detail_background));
++        dorPresenter.setStyleLarge(true);
++
++        dorPresenter.setOnActionClickedListener(new OnActionClickedListener() {
++            @Override
++            public void onActionClicked(Action action) {
++                if (action.getId() == 0) {
++                    Intent intent = new Intent(getActivity(), WebViewActivity.class);
++                    intent.putExtra(KEY, res.getString(R.string.open_source_file_wiki_link));
++                    startActivity(intent);
++                } else if (action.getId() == 1) {
++                    getActivity().finish();
++                }
++            }
++        });
++
++        presenterSelector.addClassPresenter(DetailsOverviewRow.class, dorPresenter);
++        presenterSelector.addClassPresenter(ListRow.class, new ListRowPresenter());
++        ArrayObjectAdapter adapter = new ArrayObjectAdapter(presenterSelector);
++        adapter.add(row);
++
++        setAdapter(adapter);
++    }
++
++    private class DetailsDescriptionPresenter extends AbstractDetailsDescriptionPresenter {
++        @Override
++        protected void onBindDescription(ViewHolder viewHolder, Object item) {
++            Resources res = getResources();
++            viewHolder.getTitle().setText(res.getString(R.string.app_link_title_1));
++            viewHolder.getSubtitle().setText(res.getString(R.string.details_fragment_subtitle));
++            viewHolder.getBody().setText(res.getString(R.string.details_fragment_body));
++        }
++    }
++}
+diff --git a/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/ChannelLinkSidePanelActivity.java b/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/ChannelLinkSidePanelActivity.java
+new file mode 100644
+index 0000000..1d3c5d3
+--- /dev/null
++++ b/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/ChannelLinkSidePanelActivity.java
+@@ -0,0 +1,125 @@
++/*
++ * Copyright 2015 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package android.support.v17.leanback.supportleanbackshowcase.input.widget;
++
++import android.app.Activity;
++import android.content.Intent;
++import android.os.Bundle;
++import android.support.v17.leanback.supportleanbackshowcase.R;
++import android.support.v17.leanback.widget.VerticalGridView;
++import android.support.v7.widget.RecyclerView;
++import android.view.Gravity;
++import android.view.View;
++import android.view.ViewGroup;
++import android.view.WindowManager;
++import android.widget.TextView;
++
++import com.google.android.media.tv.companionlibrary.model.Channel;
++import com.google.android.media.tv.companionlibrary.utils.TvContractUtils;
++
++import java.util.List;
++
++/**
++ * Activity that shows a simple side panel UI.
++ */
++public class ChannelLinkSidePanelActivity extends Activity {
++    private static final String KEY = "url";
++
++    private VerticalGridView mAppLinkMenuList;
++
++    @Override
++    protected void onCreate(Bundle savedInstanceState) {
++        super.onCreate(savedInstanceState);
++        List<Channel> Channels = TvContractUtils.getChannels(getContentResolver());
++        Channel appLinkChannel = null;
++
++        String displayNumber = getIntent().getStringExtra(ChannelFeedUtil.EXTRA_DISPLAY_NUMBER);
++        if (displayNumber != null) {
++            for (Channel channel : Channels) {
++                if (displayNumber.equals(channel.getDisplayNumber())) {
++                    appLinkChannel = channel;
++                    break;
++                }
++            }
++        }
++
++        // Sets the size and position of dialog activity.
++        WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
++        layoutParams.gravity = Gravity.END | Gravity.CENTER_VERTICAL;
++        layoutParams.width = getResources().getDimensionPixelSize(R.dimen.side_panel_width);
++        layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
++        getWindow().setAttributes(layoutParams);
++
++        setContentView(R.layout.channel_link_side_panel);
++
++        if (appLinkChannel != null && appLinkChannel.getAppLinkColor() != 0) {
++            TextView titleView = (TextView) findViewById(R.id.title);
++            titleView.setBackgroundColor(appLinkChannel.getAppLinkColor());
++        }
++        mAppLinkMenuList = (VerticalGridView) findViewById(R.id.list);
++        mAppLinkMenuList.setAdapter(new AppLinkMenuAdapter());
++    }
++
++    /**
++     * Adapter class that provides the app link menu list.
++     */
++    public class AppLinkMenuAdapter extends RecyclerView.Adapter<ViewHolder> {
++        private static final int ITEM_COUNT = 2;
++        private final int[] ITEM_STRING_RES_IDS = new int[]{R.string.learn_more, R.string.close};
++
++        @Override
++        public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
++            View view = getLayoutInflater().inflate(viewType, mAppLinkMenuList, false);
++            return new ViewHolder(view);
++        }
++
++        @Override
++        public int getItemViewType(int position) {
++            return R.layout.side_panel_item;
++        }
++
++        @Override
++        public void onBindViewHolder(ViewHolder viewHolder, final int position) {
++            TextView view = (TextView) viewHolder.itemView;
++            view.setText(getResources().getString(ITEM_STRING_RES_IDS[position]));
++            view.setOnClickListener(new View.OnClickListener() {
++                @Override
++                public void onClick(View v) {
++                    if (position == 0) {
++                        Intent intent = new Intent(ChannelLinkSidePanelActivity.this,
++                                WebViewActivity.class);
++                        intent.putExtra(KEY, getString(R.string.google_io_wiki_link));
++                        startActivity(intent);
++                    } else {
++                        finish();
++                    }
++                }
++            });
++        }
++
++        @Override
++        public int getItemCount() {
++            return ITEM_COUNT;
++        }
++    }
++
++    public class ViewHolder extends RecyclerView.ViewHolder {
++        public ViewHolder(View itemView) {
++            super(itemView);
++        }
++    }
++}
+diff --git a/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/InputSetupActivity.java b/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/InputSetupActivity.java
+new file mode 100644
+index 0000000..8dbc8ba
+--- /dev/null
++++ b/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/InputSetupActivity.java
+@@ -0,0 +1,34 @@
++/*
++ * Copyright 2015 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package android.support.v17.leanback.supportleanbackshowcase.input.widget;
++
++import android.app.Activity;
++import android.os.Bundle;
++import android.support.v17.leanback.supportleanbackshowcase.R;
++import android.support.v17.leanback.supportleanbackshowcase.input.service.TvInputService;
++
++
++/**
++ * The setup activity for demonstrating {@link TvInputService}.
++ */
++public class InputSetupActivity extends Activity {
++    @Override
++    public void onCreate(Bundle savedInstanceState) {
++        super.onCreate(savedInstanceState);
++        setContentView(R.layout.setup);
++    }
++}
+diff --git a/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/SetupFragment.java b/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/SetupFragment.java
+new file mode 100644
+index 0000000..7d85d2c
+--- /dev/null
++++ b/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/SetupFragment.java
+@@ -0,0 +1,116 @@
++/*
++ * Copyright 2016 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package android.support.v17.leanback.supportleanbackshowcase.input.widget;
++
++import android.app.Activity;
++import android.content.ComponentName;
++import android.content.Context;
++import android.content.SharedPreferences;
++import android.media.tv.TvInputInfo;
++import android.os.Bundle;
++import android.support.v17.leanback.supportleanbackshowcase.R;
++import android.support.v17.leanback.supportleanbackshowcase.input.service.LeanbackTvProgramSync;
++import android.support.v4.content.ContextCompat;
++import android.view.LayoutInflater;
++import android.view.View;
++import android.view.ViewGroup;
++
++import com.google.android.media.tv.companionlibrary.ChannelSetupFragment;
++import com.google.android.media.tv.companionlibrary.EpgSyncJobService;
++
++/**
++ * Fragment which shows a sample UI for registering channels and setting up LeanbackTvProgramSync to
++ * provide program information in the background.
++ */
++public class SetupFragment extends ChannelSetupFragment {
++    public static final long FULL_SYNC_FREQUENCY_MILLIS = 1000 * 60 * 60 * 24;  // 24 hour
++    private static final long FULL_SYNC_WINDOW_SEC = 1000 * 60 * 60 * 24 * 14;  // 2 weeks
++
++    private String mInputId = null;
++    private boolean mErrorFound;
++
++    @Override
++    public void onCreate(Bundle savedInstanceState) {
++        super.onCreate(savedInstanceState);
++        mInputId = getActivity().getIntent().getStringExtra(TvInputInfo.EXTRA_INPUT_ID);
++    }
++
++    @Override
++    public View onCreateView(LayoutInflater inflater, ViewGroup container,
++                             Bundle savedInstanceState) {
++        View fragmentView = super.onCreateView(inflater, container, savedInstanceState);
++        setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.detail_background));
++        setBadge(getResources().getDrawable(R.drawable.badge));
++        setChannelListVisibility(true);
++        setTitle(getString(R.string.label));
++        setDescription(getString(R.string.description));
++        setButtonText(getString(R.string.add_channel));
++        return fragmentView;
++    }
++
++    @Override
++    public void onScanStarted() {
++        EpgSyncJobService.cancelAllSyncRequests(getActivity());
++        EpgSyncJobService.requestImmediateSync(getActivity(), mInputId,
++                new ComponentName(getActivity(), LeanbackTvProgramSync.class));
++
++        // Set up SharedPreference to share inputId. If there is not periodic sync job after reboot,
++        // SyncJobReceiver can use the shared inputId to set up periodic sync job.
++        SharedPreferences sharedPreferences = getActivity().getSharedPreferences(
++                EpgSyncJobService.PREFERENCE_EPG_SYNC, Context.MODE_PRIVATE);
++        SharedPreferences.Editor editor = sharedPreferences.edit();
++        editor.putString(EpgSyncJobService.BUNDLE_KEY_INPUT_ID, mInputId);
++        editor.apply();
++
++        setButtonText(getString(R.string.setup_in_progress));
++    }
++
++    @Override
++    public String getInputId() {
++        return mInputId;
++    }
++
++    @Override
++    public void onScanFinished() {
++        if (!mErrorFound) {
++            EpgSyncJobService.cancelAllSyncRequests(getActivity());
++            EpgSyncJobService.setUpPeriodicSync(getActivity(), mInputId,
++                    new ComponentName(getActivity(), LeanbackTvProgramSync.class),
++                    FULL_SYNC_FREQUENCY_MILLIS, FULL_SYNC_WINDOW_SEC);
++            getActivity().setResult(Activity.RESULT_OK);
++        } else {
++            getActivity().setResult(Activity.RESULT_CANCELED);
++        }
++        getActivity().finish();
++    }
++
++    @Override
++    public void onScanError(int reason) {
++        mErrorFound = true;
++        switch (reason) {
++            case EpgSyncJobService.ERROR_EPG_SYNC_CANCELED:
++                setDescription(R.string.sync_error_canceled);
++                break;
++            case EpgSyncJobService.ERROR_NO_PROGRAMS:
++            case EpgSyncJobService.ERROR_NO_CHANNELS:
++                setDescription(R.string.sync_error_no_data);
++                break;
++            default:
++                setDescription(getString(R.string.sync_error_other, reason));
++                break;
++        }
++    }
++}
+diff --git a/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/WebViewActivity.java b/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/WebViewActivity.java
+new file mode 100644
+index 0000000..1419a7e
+--- /dev/null
++++ b/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/WebViewActivity.java
+@@ -0,0 +1,29 @@
++/*
++ * Copyright 2015 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package android.support.v17.leanback.supportleanbackshowcase.input.widget;
++
++import android.app.Activity;
++import android.os.Bundle;
++import android.support.v17.leanback.supportleanbackshowcase.R;
++
++public class WebViewActivity extends Activity {
++    @Override
++    public void onCreate(Bundle savedInstanceState) {
++        super.onCreate(savedInstanceState);
++        setContentView(R.layout.web);
++    }
++}
+diff --git a/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/WebViewFragment.java b/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/WebViewFragment.java
+new file mode 100644
+index 0000000..e3de552
+--- /dev/null
++++ b/app/src/main/java/android/support/v17/leanback/supportleanbackshowcase/input/widget/WebViewFragment.java
+@@ -0,0 +1,47 @@
++/*
++ * Copyright 2015 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package android.support.v17.leanback.supportleanbackshowcase.input.widget;
++
++import android.app.Fragment;
++import android.os.Bundle;
++import android.support.v17.leanback.supportleanbackshowcase.R;
++import android.util.Log;
++import android.view.LayoutInflater;
++import android.view.View;
++import android.view.ViewGroup;
++import android.webkit.WebView;
++import android.webkit.WebViewClient;
++
++public class WebViewFragment extends Fragment {
++    private final static String KEY = "url";
++    private String mUrl;
++
++    @Override
++    public View onCreateView(LayoutInflater inflater, ViewGroup container,
++                             Bundle savedInstanceState) {
++        mUrl = getActivity().getIntent().getStringExtra(KEY);
++        return inflater.inflate(R.layout.web_fragment, null);
++    }
++
++    @Override
++    public void onActivityCreated(Bundle savedInstanceState) {
++        super.onActivityCreated(savedInstanceState);
++        WebView webView = (WebView) getView();
++        webView.setWebViewClient(new WebViewClient());
++        webView.loadUrl(mUrl);
++    }
++}
+diff --git a/app/src/main/res/anim/side_panel_enter.xml b/app/src/main/res/anim/side_panel_enter.xml
+new file mode 100644
+index 0000000..93d694a
+--- /dev/null
++++ b/app/src/main/res/anim/side_panel_enter.xml
+@@ -0,0 +1,27 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2015 The Android Open Source Project
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++<set xmlns:android="http://schemas.android.com/apk/res/android">
++    <translate
++        android:duration="@integer/side_panel_anim_duration_ms"
++        android:fromXDelta="10%"
++        android:interpolator="@android:interpolator/linear_out_slow_in"
++        android:toXDelta="0%" />
++    <alpha
++        android:duration="@integer/side_panel_anim_duration_ms"
++        android:fromAlpha="0.0"
++        android:interpolator="@android:interpolator/linear_out_slow_in"
++        android:toAlpha="1.0" />
++</set>
+diff --git a/app/src/main/res/anim/side_panel_exit.xml b/app/src/main/res/anim/side_panel_exit.xml
+new file mode 100644
+index 0000000..c693893
+--- /dev/null
++++ b/app/src/main/res/anim/side_panel_exit.xml
+@@ -0,0 +1,27 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2015 The Android Open Source Project
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++<set xmlns:android="http://schemas.android.com/apk/res/android">
++    <translate
++        android:duration="@integer/side_panel_anim_duration_ms"
++        android:fromXDelta="0%"
++        android:interpolator="@android:interpolator/fast_out_linear_in"
++        android:toXDelta="10%" />
++    <alpha
++        android:duration="@integer/side_panel_anim_duration_ms"
++        android:fromAlpha="1.0"
++        android:interpolator="@android:interpolator/fast_out_linear_in"
++        android:toAlpha="0.0" />
++</set>
+diff --git a/app/src/main/res/drawable/badge.jpg b/app/src/main/res/drawable/badge.jpg
+new file mode 100644
+index 0000000000000000000000000000000000000000..5b3ffbfcceba7c54ca3df4e5c668a7bb0bf33981
+GIT binary patch
+literal 25563
+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
+
+literal 0
+HcmV?d00001
+
+diff --git a/app/src/main/res/drawable/movie.jpg b/app/src/main/res/drawable/movie.jpg
+new file mode 100644
+index 0000000000000000000000000000000000000000..794b386a18505e4dfef21cf7055b95d0213d4201
+GIT binary patch
+literal 19634
+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
+
+literal 0
+HcmV?d00001
+
+diff --git a/app/src/main/res/layout/channel_link_details_fragment.xml b/app/src/main/res/layout/channel_link_details_fragment.xml
+new file mode 100644
+index 0000000..95d02b4
+--- /dev/null
++++ b/app/src/main/res/layout/channel_link_details_fragment.xml
+@@ -0,0 +1,21 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2015 The Android Open Source Project
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++<fragment xmlns:android="http://schemas.android.com/apk/res/android"
++    android:id="@+id/details_frag"
++    android:name="android.support.v17.leanback.supportleanbackshowcase.input.widget.ChannelLinkDetailsFragment"
++    android:layout_width="match_parent"
++    android:layout_height="match_parent" />
++
+diff --git a/app/src/main/res/layout/channel_link_side_panel.xml b/app/src/main/res/layout/channel_link_side_panel.xml
+new file mode 100644
+index 0000000..be0c030
+--- /dev/null
++++ b/app/src/main/res/layout/channel_link_side_panel.xml
+@@ -0,0 +1,50 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2015 The Android Open Source Project
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:lb="http://schemas.android.com/apk/res-auto"
++    android:layout_width="@dimen/side_panel_width"
++    android:layout_height="match_parent"
++    android:background="@color/side_panel_background"
++    android:orientation="vertical">
++
++    <!-- Title -->
++    <TextView
++        android:id="@+id/title"
++        android:layout_width="match_parent"
++        android:layout_height="@dimen/side_panel_header_height"
++        android:background="@color/side_panel_header_background"
++        android:elevation="@dimen/side_panel_header_elevation"
++        android:ellipsize="end"
++        android:focusable="false"
++        android:fontFamily="sans-serif-condensed"
++        android:gravity="center_vertical"
++        android:paddingEnd="@dimen/side_panel_padding_end"
++        android:paddingStart="@dimen/side_panel_padding_start"
++        android:paddingTop="@dimen/side_panel_header_padding_top"
++        android:singleLine="true"
++        android:text="@string/app_link_title_1"
++        android:textColor="#FFEEEEEE"
++        android:textSize="@dimen/side_panel_header_text_size" />
++
++    <!-- List of contents. -->
++    <android.support.v17.leanback.widget.VerticalGridView
++        android:id="@+id/list"
++        android:layout_width="match_parent"
++        android:layout_height="match_parent"
++        android:focusable="true"
++        lb:verticalMargin="0dp" />
++
++</LinearLayout>
+diff --git a/app/src/main/res/layout/setup.xml b/app/src/main/res/layout/setup.xml
+new file mode 100644
+index 0000000..2241344
+--- /dev/null
++++ b/app/src/main/res/layout/setup.xml
+@@ -0,0 +1,20 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2015 The Android Open Source Project
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++<fragment xmlns:android="http://schemas.android.com/apk/res/android"
++    android:id="@+id/setup_frag"
++    android:name="android.support.v17.leanback.supportleanbackshowcase.input.widget.SetupFragment"
++    android:layout_width="match_parent"
++    android:layout_height="match_parent" />
+diff --git a/app/src/main/res/layout/side_panel_item.xml b/app/src/main/res/layout/side_panel_item.xml
+new file mode 100644
+index 0000000..79d4b2f
+--- /dev/null
++++ b/app/src/main/res/layout/side_panel_item.xml
+@@ -0,0 +1,31 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2015 The Android Open Source Project
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++
++<TextView xmlns:android="http://schemas.android.com/apk/res/android"
++    android:layout_width="match_parent"
++    android:layout_height="wrap_content"
++    android:layout_alignParentStart="true"
++    android:background="?android:attr/selectableItemBackground"
++    android:clipChildren="false"
++    android:focusable="true"
++    android:fontFamily="sans-serif-condensed"
++    android:paddingBottom="@dimen/side_panel_item_padding_bottom"
++    android:paddingEnd="@dimen/side_panel_padding_end"
++    android:paddingStart="@dimen/side_panel_padding_start"
++    android:paddingTop="@dimen/side_panel_item_padding_top"
++    android:singleLine="true"
++    android:textColor="@color/side_panel_item_text"
++    android:textSize="@dimen/side_panel_item_text_size" />
+diff --git a/app/src/main/res/layout/subtitleview.xml b/app/src/main/res/layout/subtitleview.xml
+new file mode 100644
+index 0000000..9bfbec0
+--- /dev/null
++++ b/app/src/main/res/layout/subtitleview.xml
+@@ -0,0 +1,25 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2015 The Android Open Source Project
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++
++<com.google.android.exoplayer.text.SubtitleLayout
++    xmlns:android="http://schemas.android.com/apk/res/android"
++    android:layout_width="wrap_content"
++    android:layout_height="wrap_content"
++    android:layout_gravity="bottom|center_horizontal"
++    android:layout_marginBottom="32dp"
++    android:layout_marginLeft="16dp"
++    android:layout_marginRight="16dp"
++    android:visibility="invisible" />
+diff --git a/app/src/main/res/layout/web.xml b/app/src/main/res/layout/web.xml
+new file mode 100644
+index 0000000..6565b7b
+--- /dev/null
++++ b/app/src/main/res/layout/web.xml
+@@ -0,0 +1,19 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2015 The Android Open Source Project
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++<fragment xmlns:android="http://schemas.android.com/apk/res/android"
++    android:name="android.support.v17.leanback.supportleanbackshowcase.input.widget.WebViewFragment"
++    android:layout_width="match_parent"
++    android:layout_height="match_parent" />
+diff --git a/app/src/main/res/layout/web_fragment.xml b/app/src/main/res/layout/web_fragment.xml
+new file mode 100644
+index 0000000..540540c
+--- /dev/null
++++ b/app/src/main/res/layout/web_fragment.xml
+@@ -0,0 +1,19 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2015 The Android Open Source Project
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++
++<WebView xmlns:android="http://schemas.android.com/apk/res/android"
++    android:layout_width="match_parent"
++    android:layout_height="match_parent" />
+diff --git a/app/src/main/res/raw/input_xmltv_feed.xml b/app/src/main/res/raw/input_xmltv_feed.xml
+new file mode 100644
+index 0000000..10fdfef
+--- /dev/null
++++ b/app/src/main/res/raw/input_xmltv_feed.xml
+@@ -0,0 +1,146 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!DOCTYPE tv SYSTEM "xmltv.dtd">
++<!--
++xmltv.dtd are extended to be align with Android TV Input Framework and contain static video
++contents. For details, please see the documentation of XmlTvParser class.
++-->
++<tv>
++    <channel id="android.support.v17.leanback.supportleanbackshowcase.2-1" repeat-programs="true">
++        <display-name>Google</display-name>
++        <display-number>2-1</display-number>
++        <icon src="https://storage.googleapis.com/android-tv/images/google.png"/>
++        <app-link color="#4caf50"
++            intent-uri="intent:#Intent;component=android.support.v17.leanback.supportleanbackshowcase/.input.widget.ChannelLinkSidePanelActivity;S.display-number=2-4;end"
++            poster-uri="android.resource://android.support.v17.leanback.supportleanbackshowcase/drawable/badge"
++            text="Google IO">
++            <icon src="https://storage.googleapis.com/android-tv/images/mpeg_dash.png"/>
++        </app-link>
++    </channel>
++    <channel id="android.support.v17.leanback.supportleanbackshowcase.2-2" repeat-programs="true">
++        <display-name>Creative Commons</display-name>
++        <display-number>2-2</display-number>
++        <icon src="https://storage.googleapis.com/android-tv/images/cc.png"/>
++        <app-link color="#4caf50"
++            intent-uri="intent:#Intent;component=android.support.v17.leanback.supportleanbackshowcase/.input.widget.ChannelLinkDetailsActivity;S.display-number=2-4;end"
++            poster-uri="android.resource://android.support.v17.leanback.supportleanbackshowcase/drawable/movie"
++            text="Open Source Movie">
++            <icon src="https://storage.googleapis.com/android-tv/images/mpeg_dash.png"/>
++        </app-link>
++        <advertisement
++            type="VAST">
++            <request-url><![CDATA[https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dlinear&correlator=]]></request-url>
++        </advertisement>
++    </channel>
++    <programme
++        channel="android.support.v17.leanback.supportleanbackshowcase.2-1"
++        start="20150817000000 +0000"
++        stop="20150817000147 +0000"
++        video-src="https://commondatastorage.googleapis.com/android-tv/Sample%20videos/April%20Fool's%202013/Introducing%20Gmail%20Blue.mp4"
++        video-type="HTTP_PROGRESSIVE">
++        <title>Introducing Gmail Blue</title>
++        <desc>Introducing Gmail Blue</desc>
++        <category>EDUCATION</category>
++        <category>TECH_SCIENCE</category>
++        <icon src="https://storage.googleapis.com/android-tv/images/gmail.png"/>
++        <rating system="com.android.tv">
++            <value>com.android.tv/US_TV/US_TV_14/US_TV_D/US_TV_L</value>
++        </rating>
++    </programme>
++    <programme
++        channel="android.support.v17.leanback.supportleanbackshowcase.2-1"
++        start="20150817000147 +0000"
++        stop="20150817004502 +0000"
++        video-src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/GoogleIO-2014-CastingToTheFuture.mp4"
++        video-type="HTTP_PROGRESSIVE">
++        <title>Google I/O 2014 - Casting To The Future</title>
++        <desc>Google I/O 2014 - Casting To The Future</desc>
++        <category>EDUCATION</category>
++        <category>TECH_SCIENCE</category>
++        <icon
++            src="https://storage.googleapis.com/gtv-videos-bucket/sample/images_480x270/ToTheFuture2-480x270.jpg"/>
++        <rating system="com.android.tv">
++            <value>com.android.tv/US_TV/US_TV_PG/US_TV_D</value>
++        </rating>
++    </programme>
++    <programme
++        channel="android.support.v17.leanback.supportleanbackshowcase.2-1"
++        start="20150817004502 +0000"
++        stop="20150817005902 +0000"
++        video-src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/GoogleIO-2014-MakingGoogleCastReadyAppsDiscoverable.mp4"
++        video-type="HTTP_PROGRESSIVE">
++        <title>Google I/O 2014 - Making Google Cast Ready Apps Discoverable</title>
++        <desc>Google I/O 2014 - Making Google Cast Ready Apps Discoverable</desc>
++        <category>EDUCATION</category>
++        <category>TECH_SCIENCE</category>
++        <icon
++            src="https://storage.googleapis.com/gtv-videos-bucket/sample/images_480x270/MakingGoogleCastReadyAppsDiscoverable-480-270.jpg"/>
++        <rating system="com.android.tv">
++            <value>com.android.tv/US_TV/US_TV_14/US_TV_D/US_TV_L</value>
++        </rating>
++    </programme>
++    <programme
++        channel="android.support.v17.leanback.supportleanbackshowcase.2-1"
++        start="20150817005902 +0000"
++        stop="20150817010113 +0000"
++        video-src="https://commondatastorage.googleapis.com/android-tv/Sample%20videos/April%20Fool's%202013/Introducing%20Google%20Fiber%20to%20the%20Pole.mp4"
++        video-type="HTTP_PROGRESSIVE">
++        <title>Introducing Google Fiber to the Pole</title>
++        <desc>Introducing Google Fiber to the Pole.</desc>
++        <category>EDUCATION</category>
++        <category>TECH_SCIENCE</category>
++        <icon src="https://storage.googleapis.com/android-tv/images/fiber.png"/>
++        <rating system="com.android.tv">
++            <value>com.android.tv/US_TV/US_TV_PG/US_TV_D</value>
++        </rating>
++    </programme>
++    <programme
++        channel="android.support.v17.leanback.supportleanbackshowcase.2-1"
++        start="20150817010113 +0000"
++        stop="20150817010315 +0000"
++        video-src="http://commondatastorage.googleapis.com/android-tv/Sample%20videos/April%20Fool's%202013/Introducing%20Google%20Nose.mp4"
++        video-type="HTTP_PROGRESSIVE">
++        <title>Introducing Google Nose</title>
++        <desc>Introducing Google Nose</desc>
++        <category>EDUCATION</category>
++        <category>TECH_SCIENCE</category>
++        <icon src="http://commondatastorage.googleapis.com/android-tv/Sample%20videos/April%20Fool's%202013/Introducing%20Google%20Nose/card.jpg"/>
++        <rating system="US_TV">
++            <value>com.android.tv/US_TV/US_TV_PG/US_TV_D</value>
++        </rating>
++        <rating system="com.android.tv">
++            <value>com.android.tv/US_TV/US_TV_PG/US_TV_D</value>
++        </rating>
++    </programme>
++    <programme
++        channel="android.support.v17.leanback.supportleanbackshowcase.2-2"
++        start="20150817000000 +0000"
++        stop="20150817001053 +0000"
++        video-src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
++        video-type="HTTP_PROGRESSIVE">
++        <title>Elephants Dream</title>
++        <desc>Do elephants dream of electric sheep?</desc>
++        <category>MOVIES</category>
++        <category>FAMILY_KIDS</category>
++        <icon
++            src="https://storage.googleapis.com/gtv-videos-bucket/sample/images_480x270/ElephantsDream.jpg"/>
++        <rating system="com.android.tv">
++            <value>com.android.tv/US_TV/US_TV_14/US_TV_D/US_TV_L</value>
++        </rating>
++    </programme>
++    <programme
++        channel="android.support.v17.leanback.supportleanbackshowcase.2-2"
++        start="20150817001053 +0000"
++        stop="20150817002540 +0000"
++        video-src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4"
++        video-type="HTTP_PROGRESSIVE">
++        <title>Sintel</title>
++        <desc>Sintel a movie clip.</desc>
++        <category>MOVIES</category>
++        <category>FAMILY_KIDS</category>
++        <icon
++            src="https://storage.googleapis.com/gtv-videos-bucket/sample/images_480x270/Sintel.jpg"/>
++        <rating system="com.android.tv">
++            <value>com.android.tv/US_TV/US_TV_PG/US_TV_D</value>
++        </rating>
++    </programme>
++</tv>
+diff --git a/app/src/main/res/values/colors.xml b/app/src/main/res/values/colors.xml
+index 8526c76..8714533 100644
+--- a/app/src/main/res/values/colors.xml
++++ b/app/src/main/res/values/colors.xml
+@@ -53,4 +53,14 @@
+     <color name="player_progress_color">#feab91</color>
+     <color name="player_background_color">#db2a0f</color>
+ 
++
++
++
++
++    <color name="detail_background">#0096a6</color>
++
++    <!-- App link side panel -->
++    <color name="side_panel_background">#263238</color>
++    <color name="side_panel_header_background">#0277BD</color>
++    <color name="side_panel_item_text">#FFEEEEEE</color>
+ </resources>
+diff --git a/app/src/main/res/values/constants.xml b/app/src/main/res/values/constants.xml
+new file mode 100644
+index 0000000..d26bfe2
+--- /dev/null
++++ b/app/src/main/res/values/constants.xml
+@@ -0,0 +1,19 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2015 The Android Open Source Project
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++<resources>
++    <!-- The minimum subtitle font size. -->
++    <dimen name="subtitle_minimum_font_size">13sp</dimen>
++</resources>
+diff --git a/app/src/main/res/values/dims.xml b/app/src/main/res/values/dims.xml
+index 38c25cc..c3ef19b 100644
+--- a/app/src/main/res/values/dims.xml
++++ b/app/src/main/res/values/dims.xml
+@@ -46,4 +46,18 @@
+ 
+     <dimen name="playback_now_playing_card_width">240dp</dimen>
+     <dimen name="playback_now_playing_card_height">240dp</dimen>
++
++
++
++    <dimen name="side_panel_width">360dp</dimen>
++    <dimen name="side_panel_padding_start">32dp</dimen>
++    <dimen name="side_panel_padding_end">56dp</dimen>
++    <dimen name="side_panel_elevation">8dp</dimen>
++    <dimen name="side_panel_header_height">87dp</dimen>
++    <dimen name="side_panel_header_padding_top">27dp</dimen>
++    <dimen name="side_panel_header_elevation">4dp</dimen>
++    <dimen name="side_panel_header_text_size">24sp</dimen>
++    <dimen name="side_panel_item_text_size">16sp</dimen>
++    <dimen name="side_panel_item_padding_top">11dp</dimen>
++    <dimen name="side_panel_item_padding_bottom">12.5dp</dimen>
+ </resources>
+\ No newline at end of file
+diff --git a/app/src/main/res/values/integers.xml b/app/src/main/res/values/integers.xml
+new file mode 100644
+index 0000000..c6c4a47
+--- /dev/null
++++ b/app/src/main/res/values/integers.xml
+@@ -0,0 +1,18 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2015 The Android Open Source Project
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++<resources>
++    <integer name="side_panel_anim_duration_ms">250</integer>
++</resources>
+\ No newline at end of file
+diff --git a/app/src/main/res/values/strings.xml b/app/src/main/res/values/strings.xml
+index ac7ffef..c076433 100644
+--- a/app/src/main/res/values/strings.xml
++++ b/app/src/main/res/values/strings.xml
+@@ -69,4 +69,28 @@
+     <string name="wizard_example_master">Master-%s</string>
+     <string name="wizard_example_input_credit_wrong">Error: invalid credit card number</string>
+     <string name="wizard_example_just_a_second">Just a second...</string>
++
++
++
++    <string name="description" translatable="false">Demo for Android TV Input Framework</string>
++    <string name="label" translatable="false">Leanback Showcase Input</string>
++    <string name="input_feed_url" translatable="false">http://commondatastorage.googleapis.com/android-tv/rich_tv_input_xmltv_feed.xml</string>
++    <string name="add_channel">Add Channels</string>
++    <string name="setup_cancel">Cancel Setup</string>
++    <string name="setup_in_progress">In Progress…</string>
++    <string name="feed_error_message">No feed. Check your connection!</string>
++    <string name="app_link_title_1" translatable="false">Open-source film</string>
++    <string name="app_link_title_2" translatable="false">Google IO</string>
++    <string name="details_fragment_subtitle" translatable="false">Channel For Open Source Film</string>
++    <string name="details_fragment_body" translatable="false">Open-source films (also known as open-content films and free-content films) are films which are produced and distributed by using free and open-source and open content methodologies</string>
++    <string name="details_fragment_learn_more" translatable="false">Learn More</string>
++    <string name="open_source_file_wiki_link" translatable="false">https://en.wikipedia.org/wiki/Open-source_film</string>
++    <string name="google_io_wiki_link" translatable="false">https://en.wikipedia.org/wiki/Google_I/O</string>
++    <string name="details_fragment_close" translatable="false">Close</string>
++    <string name="learn_more" translatable="false">Learn More</string>
++    <string name="close" translatable="false">Close</string>
++
++    <string name="sync_error_canceled">User canceled sync</string>
++    <string name="sync_error_no_data">No programs or channels found. Check your connection.</string>
++    <string name="sync_error_other">Error code %1$d</string>
+ </resources>
+\ No newline at end of file
+diff --git a/app/src/main/res/values/themes.xml b/app/src/main/res/values/themes.xml
+index e945bed..4e6e938 100644
+--- a/app/src/main/res/values/themes.xml
++++ b/app/src/main/res/values/themes.xml
+@@ -88,4 +88,22 @@
+         <item name="playbackMediaListHeaderStyle">@style/MediaListHeaderStyle</item>
+     </style>
+ 
++    <style name="Theme.Panel" parent="@android:style/Theme.Material.Panel">
++        <item name="android:windowElevation">@dimen/side_panel_elevation</item>
++        <item name="android:windowBackground">@color/side_panel_background</item>
++        <item name="android:windowAnimationStyle">@style/side_panel_animation</item>
++    </style>
++
++    <style name="side_panel_animation">
++        <item name="android:windowEnterAnimation">@anim/side_panel_enter</item>
++        <item name="android:windowExitAnimation">@anim/side_panel_exit</item>
++    </style>
++
++    <style name="Theme.Transparent" parent="Theme.Leanback">
++        <item name="android:windowIsTranslucent">true</item>
++        <item name="android:windowBackground">@android:color/transparent</item>
++        <item name="android:windowContentOverlay">@null</item>
++        <item name="android:windowNoTitle">true</item>
++        <item name="android:backgroundDimEnabled">false</item>
++    </style>
+ </resources>
+diff --git a/app/src/main/res/xml/inputservice.xml b/app/src/main/res/xml/inputservice.xml
+new file mode 100644
+index 0000000..6a4d12b
+--- /dev/null
++++ b/app/src/main/res/xml/inputservice.xml
+@@ -0,0 +1,18 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2015 The Android Open Source Project
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++<tv-input xmlns:android="http://schemas.android.com/apk/res/android"
++    android:canRecord="true"
++    android:setupActivity="android.support.v17.leanback.supportleanbackshowcase.input.widget.InputSetupActivity" />
+diff --git a/build.gradle b/build.gradle
+index 6b0bfa9..50635cc 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -6,7 +6,7 @@ buildscript {
+         jcenter()
+     }
+     dependencies {
+-        classpath 'com.android.tools.build:gradle:2.4.0-alpha6'
++        classpath 'com.android.tools.build:gradle:2.3.3'
+ 
+         // NOTE: Do not place your application dependencies here; they belong
+         // in the individual module build.gradle files
+diff --git a/local.properties b/local.properties
+deleted file mode 100644
+index 5f497a2..0000000
+--- a/local.properties
++++ /dev/null
+@@ -1 +0,0 @@
+-# sdk.dir=
+diff --git a/xmltv.dtd b/xmltv.dtd
+new file mode 100644
+index 0000000..ded9ee2
+--- /dev/null
++++ b/xmltv.dtd
+@@ -0,0 +1,666 @@
++<!-- DTD for TV listings
++
++This file is extended to support Android TV Input Framework and static
++video contents. You can find the original file at:
++http://xmltv.cvs.sourceforge.net/viewvc/xmltv/xmltv/xmltv.dtd
++
++This is a DTD to represent a TV listing.  It doesn't explicitly group
++programmes by day or by channel, instead broadcast time and channel
++are attributes of the 'programme' element.  Optionally, data about the
++TV channels used can be stored in 'channel' elements.
++
++Data about a TV programme are stored in the subelements of element
++'programme', but metadata such as when it will be broadcast are stored
++as attributes.
++
++Many of the details have a 'lang' attribute so that you can
++store them in multiple languages or have mixed languages in a single
++listing.  This 'lang' should be the two-letter code such as 'en' or
++'fr_FR'.  Or you can just leave it out and let your reader take a
++guess.
++
++Unless otherwise specified, an element containing CDATA must have some
++text if it is written.
++
++An example XML file for this DTD might look like this:
++
++<tv generator-info-name="my listings generator">
++  <channel id="3sat.de">
++    <display-name lang="de">3SAT</display-name>
++  </channel>
++  <channel id="das-erste.de">
++    <display-name lang="de">ARD</display-name>
++    <display-name lang="de">Das Erste</display-name>
++  </channel>
++
++  <programme start="200006031633" channel="3sat.de">
++    <title lang="de">blah</title>
++    <title lang="en">blah</title>
++    <desc lang="de">
++       Blah Blah Blah.
++    </desc>
++    <credits>
++      <director>blah</director>
++      <actor>a</actor>
++      <actor>b</actor>
++    </credits>
++    <date>19901011</date>
++    <country>ES</country>
++    <episode-num system="xmltv_ns">2 . 9 . 0/1</episode-num>
++    <video>
++      <aspect>16:9</aspect>
++    </video>
++    <rating system="MPAA">
++      <value>PG</value>
++      <icon src="pg_symbol.png" />
++    </rating>
++    <star-rating>
++      <value>3/3</value>
++    </star-rating>
++  </programme>
++  <programme> ... </programme>
++  ...
++</tv>
++
++This describes two channels and then a programme broadcast on one of
++the channels, then some more programmes.  Almost everything in the DTD
++is optional, so you can write files which are much simpler than this
++example.
++
++All dates and times in this DTD follow the same format, loosely based
++on ISO 8601.  They can be 'YYYYMMDDhhmmss' or some initial
++substring, for example if you only know the year and month you can
++have 'YYYYMM'.  You can also append a timezone to the end; if no
++explicit timezone is given, UTC is assumed.  Examples:
++'200007281733 BST', '200209', '19880523083000 +0300'.  (BST == +0100.)
++
++Unless specified otherwise, textual element content may not contain
++newlines - this is to make it easy to convert into line-oriented
++formats, and to avoid the question of what exactly a newline would
++mean in the middle of someone's name or whatever.  Leading and
++trailing whitespace in element content is not significant.
++
++At present versions of this DTD correspond to releases of the 'xmltv'
++package, which is a set of programs to generate and manipulate files
++conforming to this DTD.  Written by Ed Avis (ed@membled.com) and
++Gottfried Szing, thanks to others for suggestions.
++
++$Id: xmltv.dtd,v 1.47 2014/05/02 07:27:51 bilbo_uk Exp $
++
++-->
++
++<!-- The root element, tv.
++
++Date should be the date when the listings were originally produced in
++whatever format; if you're converting data from another source, then
++use the date given by that source.  The date when the conversion
++itself was done is not important.
++
++To indicate the source of the listings, there are three attributes you
++can define:
++
++'source-info-url' is a URL describing the data source in
++some human-readable form.  So if you are getting your listings from
++SAT.1, you might set this to the URL of a page explaining how to
++subscribe to their feed.  If you are getting them from a website, the
++URL might be the index of the site or at least of the TV listings
++section.
++
++'source-info-name' is the link text for that URL; it should
++generally be the human-readable name of your listings supplier.
++Sometimes the link text might be printed without the link itself, in
++hardcopy listings for example.
++
++'source-data-url' is where the actual data is grabbed from.  This
++should link directly to the machine-readable data files if possible,
++but it's not rigorously defined what 'actual data' means.  If you are
++parsing the data from human-readable pages, then it's more appropriate
++to link to them with the source-info stuff and omit this attribute.
++
++To publicize your wonderful program which generated this file, you can
++use 'generator-info-name' (preferably in the form 'progname/version')
++and 'generator-info-url' (a link to more info about the program).
++-->
++<!ELEMENT tv (channel*, programme*)>
++<!ATTLIST tv date   CDATA #IMPLIED
++             source-info-url     CDATA #IMPLIED
++             source-info-name    CDATA #IMPLIED
++             source-data-url     CDATA #IMPLIED
++             generator-info-name CDATA #IMPLIED
++             generator-info-url  CDATA #IMPLIED >
++
++<!-- channel - details of a channel
++
++Each 'programme' element (see below) should have an attribute
++'channel' giving the channel on which it is broadcast.  If you want to
++provide more detail about channels, you can give some 'channel'
++elements before listing the programmes.  The 'id' attribute of the
++channel should match what is given in the 'channel' attribute of the
++programme.
++
++Typically, all the channels used in a particular TV listing will be
++included and then the programmes using those channels.  But it's
++entirely optional to include channel details - you can just leave out
++channel elements or provide only some of them.  It is also okay to
++give just channels and no programmes, if you just want to describe
++what TV channels are available in a certain area.
++
++Each channel has one id attribute, which must be unique and should
++preferably be in the form suggested by RFC2838 (the 'broadcast'
++element of the grammar in that RFC, in other words, a DNS-like name
++but without any URI scheme).  Then one or more display names which are
++shown to the user.  You might want a different display name for
++different languages, but also you can have more than one name for the
++same language.  Names listed earlier are considered 'more canonical'.
++
++Since the display name is just there as a way for humans to refer to
++the channel, it's acceptable to just put the channel number if it's
++fairly universal among viewers of the channel.  But remember that this
++isn't an official statement of what channel number has been
++allocated, and the same number might be used for a different channel
++somewhere else.
++
++The ordering of channel elements makes no difference to the meaning of
++the file, since they are looked up by id and not by their position.
++However it makes things like diffing easier if you write the channel
++elements sorted by ASCII order of their ids.
++
++The repeat-programs attribute is introduced to simulate a live channel.
++If "true", the programs in the XML document are scheduled sequentially
++in a loop. Program and advertisement start and end times will be shifted
++as necessary for looping content. This is Android TV specific.
++
++Attribute introduced by Android TV: repeat-programs.
++Child elements introduced by Android TV: display-number, app-link, advertisement.
++-->
++<!ELEMENT channel (display-name+, display-number, icon*, url*, app-link?, advertisement?)>
++<!ATTLIST channel id              CDATA #REQUIRED
++                  repeat-programs CDATA #IMPLIED >
++
++<!-- A user-friendly name for the channel - maybe even a channel
++number.  List the most canonical / common ones first and the most
++obscure names last.  The lang attribute follows RFC 1766.
++-->
++<!ELEMENT display-name (#PCDATA)>
++<!ATTLIST display-name lang CDATA #IMPLIED>
++
++<!-- A channel number that is displayed to users. This is Android TV
++specific.
++-->
++<!ELEMENT display-number (#PCDATA)>
++
++<!-- A URL where you can find out more about the element that contains
++it (programme or channel).  This might be the official site, or a fan
++page, whatever you like really.
++
++If multiple url elements are given, the most authoritative or official
++(which might conflict...) sites should be listed first.
++-->
++<!ELEMENT url (#PCDATA)>
++
++<!-- The app-link allows channel input sources to provide activity links
++from their live channel programming to another activity. This enables
++content providers to increase user engagement by offering the viewer
++other content or actions. This is Android TV specific.
++
++'color' is the accent color of the app link template for this channel.
++This is primarily used for the background color of the text box in the
++template.
++
++'intent-uri' is the intent URI of the app link for this channel. It
++should be created using Intent.toUri(int) with Intent.URI_INTENT_SCHEME
++(See https://developer.android.com/reference/android/media/tv/TvContract
++.Channels.html#COLUMN_APP_LINK_INTENT_URI). The intent is launched when
++the user clicks the corresponding app link for the current channel.
++
++'poster-uri' is the URI for the poster art used as the background of the
++app link template for this channel.
++
++'text' is the text of the app link template for this channel.
++
++Child elements introduced by Android TV: color, intent-uri, poster-uri,
++text.
++ -->
++<!ELEMENT app-link (icon?)>
++<!ATTLIST app-link color      CDATA #IMPLIED
++                   intent-uri CDATA #IMPLIED
++                   poster-uri CDATA #IMPLIED
++                   text       CDATA #IMPLIED >
++
++<!-- programme - details of a single programme transmission
++
++A show will be exactly the same whether it is broadcast at 18:00 or
++19:00, and on whichever channel.  Technical details like broadcast
++time don't affect the content of the programme itself, so they are
++included as attributes of this element.  Start time and channel are
++the two that you must include.
++
++Sometimes VCR programming systems like PDC or VPS have their own
++notion of 'start time' which is different from the actual start time,
++so there are attributes for that.  In practice, stop time will usually
++be the start time of the next programme, but if you can get it more
++accurate, good for you.  Similarly, you can specify a code for
++Gemstar's Showview or VideoPlus programming systems.
++
++TV listings sometimes have the problem of listing two or more
++programmes in the same timeslot, such as 'News; Weather'.  We call
++this a 'clump' of programmes, and the 'clumpidx' attribute
++differentiates between two programmes sharing the same timeslot and
++channel.  In this case News would have clumpidx="0/2" and Weather
++would have clumpidx="1/2".  If you don't have this problem, be
++thankful!
++
++It's intended that start time and stop time, when both are present,
++make a half-closed interval: a programme is considered to be
++broadcasting _at_ its start time but to stop just before its stop
++time.  In this way a programme from 11:00 to 12:00 does not overlap
++with another programme from 12:00 to 13:00, not even for a moment.
++Nor is there any gap between the two.
++
++To do: Some means of indicating breaks between programmes on the same
++channel.  The 'channel' attribute references the 'id' of a channel
++element, but the DTD doesn't give a way to specify this constraint.
++Perhaps there is some better XML syntax we could use for that.
++
++'video-src' is the video URL for the given program. This can be
++omitted if the XML will be used only for the program guide update.
++This is Android TV specific.
++
++'video-type' is the video type. Should be one of "HTTP_PROGRESSIVE",
++"HLS", and "MPEG-DASH". This can be omitted if the XML will be used
++only for the program guide update. This is Android TV specific.
++
++Note that the XML validator in Android Studio requires the ordering
++of elements to be aligned with the ordering in dtd. If you see errors
++on 'programme' element, please double check the ordering of child
++elements in programme.
++
++Attributes introduced by Android TV: video-src, video-type.
++Child elements introduced by Android TV: advertisement
++-->
++<!ELEMENT programme (title+, sub-title*, desc*, credits?, date?,
++                     category*, keyword*, language?, orig-language?,
++                     length?, icon*, url*, country*, episode-num*,
++                     video?, audio?, previously-shown?, premiere?,
++                     last-chance?, new?, subtitles*, rating*,
++                     star-rating*, review*, advertisement* )>
++<!ATTLIST programme start     CDATA #REQUIRED
++                    stop      CDATA #IMPLIED
++                    pdc-start CDATA #IMPLIED
++                    vps-start CDATA #IMPLIED
++                    showview  CDATA #IMPLIED
++                    videoplus CDATA #IMPLIED
++                    channel   CDATA #REQUIRED
++                    clumpidx  CDATA "0/1"
++                    video-src CDATA #IMPLIED
++                    video-type CDATA #IMPLIED >
++
++<!-- Programme title, eg 'The Simpsons'. -->
++<!ELEMENT title (#PCDATA)>
++<!ATTLIST title lang CDATA #IMPLIED>
++
++<!-- Sub-title or episode title, eg 'Datalore'.   Should probably be
++called 'secondary title' to avoid confusion with captioning!
++-->
++<!ELEMENT sub-title (#PCDATA)>
++<!ATTLIST sub-title lang CDATA #IMPLIED>
++
++<!-- Description of the programme or episode.
++
++Unlike other elements, long bits of whitespace here are treated as
++equivalent to a single space and newlines are permitted, so you can
++break lines and write a pretty-looking paragraph if you wish.
++-->
++<!ELEMENT desc (#PCDATA)>
++<!ATTLIST desc lang CDATA #IMPLIED>
++
++<!-- Credits for the programme.
++
++People are listed in decreasing order of importance; so for example
++the starring actors appear first followed by the smaller parts.  As
++with other parts of this file format, not mentioning a particular
++actor (for example) does not imply that he _didn't_ star in the film -
++so normally you'd list only the few most important people.
++
++Adapter can be either somebody who adapted a work for television, or
++somebody who did the translation from another language.  Maybe these
++should be separate, but if so how would 'translator' fit in with the
++'language' element?
++-->
++<!ELEMENT credits (director*, actor*, writer*, adapter*, producer*,
++                   composer*, editor*, presenter*, commentator*, 
++                   guest* )>
++<!ELEMENT director    (#PCDATA)>
++<!ELEMENT actor       (#PCDATA)>
++<!ATTLIST actor role  CDATA #IMPLIED>
++<!ELEMENT writer      (#PCDATA)>
++<!ELEMENT adapter     (#PCDATA)>
++<!ELEMENT producer    (#PCDATA)>
++<!ELEMENT composer    (#PCDATA)>
++<!ELEMENT editor      (#PCDATA)>
++<!ELEMENT presenter   (#PCDATA)>
++<!ELEMENT commentator (#PCDATA)>
++<!ELEMENT guest       (#PCDATA)>
++
++
++<!-- The date the programme or film was finished.  This will probably
++be the same as the copyright date.
++-->
++<!ELEMENT date (#PCDATA)>
++
++<!-- Type of programme, eg 'soap', 'comedy' or whatever the
++equivalents are in your language.  There's no predefined set of
++categories and it's okay for a programme to belong to several.
++-->
++<!ELEMENT category (#PCDATA)>
++<!ATTLIST category lang CDATA #IMPLIED>
++
++<!-- Keywords for the programme, eg 'prison-drama', 'based-on-novel', 
++'super-hero'.  There's no predefined set of keywords and it's likely 
++for a programme to have several.  It is recommended that keywords
++containing multiple words are hyphenated.
++-->
++<!ELEMENT keyword (#PCDATA)>
++<!ATTLIST keyword lang CDATA #IMPLIED>
++
++<!-- The language the programme will be broadcast in.  This does not
++include the language of any subtitles, but it is affected by dubbing
++into a different language.  For example, if a French film is dubbed
++into English, language=en and orig-language=fr.
++
++There are two ways to specify the language.  You can use the
++two-letter codes such as en or fr, or you can give a name such as
++'English' or 'Deutsch'.  In the latter case you might want to use the
++'lang' attribute, for example
++
++<language lang="fr">Allemand</language>
++-->
++<!ELEMENT language (#PCDATA)>
++<!ATTLIST language lang CDATA #IMPLIED>
++
++<!-- The original language, before dubbing.  The same remarks as for
++'language' apply.
++-->
++<!ELEMENT orig-language (#PCDATA)>
++<!ATTLIST orig-language lang CDATA #IMPLIED>
++
++<!-- The true length of the programme, not counting advertisements or
++trailers.  But this does take account of any bits which were cut out
++of the broadcast version - eg if a two hour film is cut to 110 minutes
++and then padded with 20 minutes of advertising, length will be 110
++minutes even though end time minus start time is 130 minutes.
++-->
++<!ELEMENT length (#PCDATA)>
++<!ATTLIST length units (seconds | minutes | hours) #REQUIRED>
++
++<!-- An icon associated with the element that contains it.
++src: uri of image
++width, height: (optional) dimensions of image
++
++These dimensions are pixel dimensions for the time being, eventually
++this will change to be more like HTML's 'img'.
++-->
++<!ELEMENT icon EMPTY>
++<!ATTLIST icon src         CDATA #REQUIRED
++               width       CDATA #IMPLIED
++               height      CDATA #IMPLIED> 
++
++<!-- The value of the element that contains it.  This is for elements
++that can have both a textual 'value' and an icon.  At present there is
++no 'lang' attribute here because things like 'PG' are not translatable
++(although a document explaining what 'PG' actually means would be).
++It happens that 'value' is used only for this sort of thing.
++-->
++<!ELEMENT value (#PCDATA)>
++
++<!-- A country where the programme was made or one of the countries in
++a joint production.  You can give the name of a country, in which case
++you might want to specify the language in which this name is written,
++or you can give a two-letter uppercase country code, in which case the
++lang attribute should not be given.  For example,
++
++<country lang="en">Italy</country>
++<country>GB</country>
++-->
++<!ELEMENT country (#PCDATA)>
++<!ATTLIST country lang CDATA #IMPLIED>
++
++<!-- Episode number
++
++Not the title of the episode, its number or ID.  There are several
++ways of numbering episodes, so the 'system' attribute lets you specify
++which you mean.
++
++There are two predefined numbering systems, 'xmltv_ns' and
++'onscreen'.
++
++xmltv_ns: This is intended to be a general way to number episodes and
++parts of multi-part episodes.  It is three numbers separated by dots,
++the first is the series or season, the second the episode number
++within that series, and the third the part number, if the programme is
++part of a two-parter.  All these numbers are indexed from zero, and
++they can be given in the form 'X/Y' to show series X out of Y series
++made, or episode X out of Y episodes in this series, or part X of a
++Y-part episode.  If any of these aren't known they can be omitted.
++You can put spaces whereever you like to make things easier to read.
++
++(NB 'part number' is not used when a whole programme is split in two
++for purely scheduling reasons; it's intended for cases where there
++really is a 'Part One' and 'Part Two'.  The format doesn't currently
++have a way to represent a whole programme that happens to be split
++across two or more timeslots.)
++
++Some examples will make things clearer.  The first episode of the
++second series is '1.0.0/1' .  If it were a two-part episode, then the
++first half would be '1.0.0/2' and the second half '1.0.1/2'.  If you
++know that an episode is from the first season, but you don't know
++which episode it is or whether it is part of a multiparter, you could
++give the episode-num as '0..'.  Here the second and third numbers have
++been omitted.  If you know that this is the first part of a three-part
++episode, which is the last episode of the first series of thirteen,
++its number would be '0 . 12/13 . 0/3'.  The series number is just '0'
++because you don't know how many series there are in total - perhaps
++the show is still being made!
++
++The other predefined system, onscreen, is to simply copy what the
++programme makers write in the credits - 'Episode #FFEE' would
++translate to '#FFEE'.
++
++You are encouraged to use one of these two if possible; if xmltv_ns is
++not general enough for your needs, let me know.  But if you want, you
++can use your own system and give the 'system' attribute as a URL
++describing the system you use.
++
++Systems proposed in 2013 to refer to common metadatabases in a
++common way:
++'themoviedb.org' with the content 'movie/1234' to refer to a movie,
++'thetvdb.com' with the content 'series/123456' to refer to a series,
++'thetvdb.com' with the content 'episode/123456' to refer to one episode
++of a series and 'imdb.com' with the content 'title/tt123455' to refer to
++a movie, series or episode.
++
++-->
++<!ELEMENT episode-num (#PCDATA)>
++<!ATTLIST episode-num system CDATA "onscreen">
++
++<!-- Video details: the subelements describe the picture quality as
++follows:
++
++present: whether this programme has a picture (no, in the
++case of radio stations broadcast on TV or 'Blue'), legal values are
++'yes' or 'no'.  Obviously if the value is 'no', the other elements are
++meaningless.
++
++colour: 'yes' for colour, 'no' for black-and-white.
++
++aspect: The horizontal:vertical aspect ratio, eg '4:3' or '16:9'.
++
++quality: information on the quality, eg 'HDTV', '800x600'.
++
++-->
++<!ELEMENT video (present?, colour?, aspect?, quality?)>
++<!ELEMENT present (#PCDATA)>
++<!ELEMENT colour (#PCDATA)>
++<!ELEMENT aspect (#PCDATA)>
++<!ELEMENT quality (#PCDATA)>
++
++<!-- Audio details, similar to video details above.
++
++present: whether this programme has any sound at all, 'yes' or 'no'.
++
++stereo: Description of the stereo-ness of the sound.  Legal values
++are currently 'mono','stereo','dolby','dolby digital','bilingual' 
++and 'surround'. 'bilingual' in this case refers to a single audio 
++stream where the left and right channels contain monophonic audio
++in different languages.  Other values may be added later.
++
++-->
++<!ELEMENT audio (present?, stereo?)>
++<!ELEMENT stereo (#PCDATA)>
++
++<!-- When and where the programme was last shown, if known.  Normally
++in TV listings 'repeat' means 'previously shown on this channel', but
++if you don't know what channel the old screening was on (but do know
++that it happened) then you can omit the 'channel' attribute.
++Similarly you can omit the 'start' attribute if you don't know when
++the previous transmission was (though you can of course give just the
++year, etc.).
++
++The absence of this element does not say for certain that the
++programme is brand new and has never been screened anywhere before.
++-->
++<!ELEMENT previously-shown EMPTY>
++<!ATTLIST previously-shown start   CDATA #IMPLIED
++                           channel CDATA #IMPLIED >
++
++<!-- 'Premiere'.  Different channels have different meanings for this
++word - sometimes it means a film has never before been seen on TV in
++that country, but other channels use it to mean 'the first showing of
++this film on our channel in the current run'.  It might have been
++shown before, but now they have paid for another set of showings,
++which makes the first in that set count as a premiere!
++
++So this element doesn't have a clear meaning, just use it to represent
++where 'premiere' would appear in a printed TV listing.  You can use
++the content of the element to explain exactly what is meant, for
++example:
++
++<premiere lang="en">
++  First showing on national terrestrial TV
++</premiere>
++
++The textual content is a 'paragraph' as for <desc>.  If you don't want
++to give an explanation, just write empty content:
++
++<premiere />
++-->
++<!ELEMENT premiere (#PCDATA)>
++<!ATTLIST premiere lang CDATA #IMPLIED>
++
++<!-- Last-chance.  In a way this is the opposite of premiere.  Some
++channels buy the rights to show a movie a certain number of times, and
++the first may be flagged 'premiere', the last as 'last showing'.
++
++For symmetry with premiere, you may use the element content to give a
++'paragraph' describing exactly what is meant - it's unlikely to be the
++last showing ever!  Otherwise, explicitly put empty content:
++
++<last-chance />
++-->
++<!ELEMENT last-chance (#PCDATA)>
++<!ATTLIST last-chance lang CDATA #IMPLIED>
++
++<!-- New.  This is the first screened programme from a new show that
++has never been shown on television before - if not worldwide then at
++least never before in this country.  After the first episode or
++programme has been shown, subsequent ones are no longer 'new'.
++Similarly the second series of an established programme is not 'new'.
++
++Note that this does not mean 'new season' or 'new episode' of an
++existing show.  You can express part of that using the episode-num
++stuff.
++-->
++<!ELEMENT new EMPTY>
++
++<!-- Subtitles.  These can be either 'teletext' (sent digitally, and
++displayed at the viewer's request), 'onscreen' (superimposed on the
++picture and impossible to get rid of), or 'deaf-signed' (in-vision 
++signing for users of sign language). You can have multiple subtitle
++streams to handle different languages.  Language for subtitles is
++specified in the same way as for programmes.
++-->
++<!ELEMENT subtitles (language?)>
++<!ATTLIST subtitles type (teletext | onscreen | deaf-signed) #IMPLIED>
++
++<!-- Rating.  Various bodies decide on classifications for films -
++usually a minimum age you must be to see it.  In principle the same
++could be done for ordinary TV programmes.  Because there are many
++systems for doing this, you can also specify the rating system used
++(which in practice is the same as the body which made the rating).
++-->
++<!ELEMENT rating (value, icon*)>
++<!ATTLIST rating system CDATA #IMPLIED>
++
++<!-- 'Star rating' - many listings guides award a programme a score as
++a quick guide to how good it is.  The value of this element should be
++'N / M', for example one star out of a possible five stars would be
++'1 / 5'.  Zero stars is also a possible score (and not the same as
++'unrated').  You should try to map whatever wacky system your listings
++source uses to a number of stars: so for example if they have thumbs
++up, thumbs sideways and thumbs down, you could map that to two, one or
++zero stars out of two.  If a programme is marked as recommended in a
++listings guide you could map this to '1 / 1'. Because there could be many 
++ways to provide star-ratings or recommendations for a programme, you can 
++specify multiple star-ratings. You can specify the star-rating system 
++used, or the provider of the recommendation, with the system attribute. 
++Whitespace between the numbers and slash is ignored.
++-->
++
++<!ELEMENT star-rating (value, icon*)>
++<!ATTLIST star-rating system CDATA #IMPLIED>
++
++<!-- Review.  Listings guides may provide reviews of programmes in
++addition to, or in place of, standard programme descriptions. They are 
++usually written by in-house reviewers, but reviews can also be made 
++available by third-party organisations/individuals. The value of this 
++element must be either the text of the review, or a URL that links to it.
++Optional attributes giving the review source and the individual reviewer 
++can also be specified.
++-->
++<!ELEMENT review (#PCDATA)>
++<!ATTLIST review type     (text | url) #REQUIRED
++                 source   CDATA        #IMPLIED
++                 reviewer CDATA        #IMPLIED
++                 lang     CDATA        #IMPLIED>
++
++<!-- Advertisement. This is Android TV specific element to support advertisement insertion in
++program. A programme may have multiple advertisements.
++
++'start' and 'stop' is the start/end time of advertisement.The time of advertisement cannot overlap
++with another advertisement.
++
++'type' is a require attributes for advertisement type.
++
++Child elements introduced by Android TV: request-url.
++-->
++<!ELEMENT advertisement (request-url)>
++<!ATTLIST advertisement start CDATA #IMPLIED
++                        stop  CDATA #IMPLIED
++                        type  CDATA #REQUIRED>
++
++<!-- URL for requesting advertisement from providers. Since many request URLs contain special
++characters (such as ampersand) which violate the XML encode schema, <![CDATA[]]> is recommended to
++avoid XML parser misinterpreting. For example:
++
++<request-url><![CDATA[https://example.com?sz=640x480&impl=s&gdfp_req=1]]></request-url>
++
++If there is no special characters or they are properly handled by escaping, <![CDATA[]]> is not
++required.
++-->
++<!ELEMENT request-url (#PCDATA)>
++
++<!-- (Why are things like 'stereo', which must be one of a small
++number of values, stored as the contents of elements rather than as
++attributes?  Because they are data rather than metadata.  Attributes
++are used for things like the language or encoding of element contents,
++or for programme transmission details.) -->
