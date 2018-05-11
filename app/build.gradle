@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 'android-26'
-    buildToolsVersion '26.0.0'
+    compileSdkVersion 'android-27'
+    buildToolsVersion '26.0.2'
 
     defaultConfig {
         applicationId "android.support.v17.leanback.supportleanbackshowcase"
-        minSdkVersion 21
-        targetSdkVersion 26
+        minSdkVersion 23
+        targetSdkVersion 27
         versionCode 1
         versionName "1.0"
         multiDexEnabled true
@@ -19,21 +19,22 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_6
-        targetCompatibility JavaVersion.VERSION_1_6
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
     }
 }
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:recyclerview-v7:+'
-    compile 'com.android.support:leanback-v17:+'
-    compile 'com.android.support:appcompat-v7:+'
-    compile 'com.android.support:preference-v7:+'
-    compile 'com.android.support:preference-leanback-v17:+'
-    compile 'com.android.support:preference-v14:+'
-    compile 'com.google.code.gson:gson:1.7.2'
-    compile 'com.android.support:palette-v7:+'
+    compile 'com.android.support:recyclerview-v7:27.1.1'
+    compile 'com.android.support:leanback-v17:27.1.1'
+    compile 'com.android.support:appcompat-v7:27.1.1'
+        compile 'com.android.support:support-v4:27.1.1'
+    compile 'com.android.support:preference-v7:27.1.1'
+    compile 'com.android.support:preference-leanback-v17:27.1.1'
+    compile 'com.android.support:preference-v14:27.1.1'
+    compile 'com.google.code.gson:gson:2.8.0'
+    compile 'com.android.support:palette-v7:27.1.1'
     compile 'com.google.android.exoplayer:exoplayer:r2.2.0'
     compile 'com.github.bumptech.glide:glide:3.7.0'
     compile 'com.google.android.libraries.tv:companionlibrary:0.1'
